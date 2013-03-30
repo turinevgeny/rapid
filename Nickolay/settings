@@ -1,0 +1,9 @@
+-I/usr/local/include/opencv -I/usr/local/include
+-L/usr/local/lib/
+opencv_core
+opencv_imgproc
+opencv_highgui
+opencv_video
+opencv_features2d
+opencv_calib3d
+opencv_objdetect
