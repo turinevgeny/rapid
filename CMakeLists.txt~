@@ -9,7 +9,7 @@ set(SOURCE ${Path}/RAPID.cpp ${Path}/Model.cpp)
 #SET(SOURCE_LIB Model.cpp)
 #add_library(Model STATIC ${SOURCE_LIB})
 
-add_executable(RAPID ${SOURCE})
+add_executable(RAPID ${SOURCE_EXE})
 
 #target_link_libraries( RAPID Model)
 target_link_libraries( RAPID ${OpenCV_LIBS} )

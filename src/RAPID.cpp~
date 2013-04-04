@@ -14,7 +14,7 @@ using namespace cv;
 #include "new1.hpp"
 
 // Camera calibrating output
-const char filename[] = "out_camera_data.xml";
+const char filename[] = "../out_camera_data.xml";
 
 void help()
 {
