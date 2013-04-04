@@ -1,1 +1,8 @@
 turinevgen@gmail.com
+
+recommended steps to run cmake/make commands:
+	cd git/rapid 
+	mkdir build
+	cmake ../src
+	make 
+
