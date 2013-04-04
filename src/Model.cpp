@@ -28,7 +28,13 @@ Model::Model(const Mat &_T,
 
 Model::~Model()
 {
-
+	std::list<Mat>::iterator iter = controlPoints.begin();
+	while (iter != controlPoints.end())
+	{
+		iter->release();
+		iter++;
+	}
+	std::cout << controlPoints.size();
 }
 
 // Projecting points manually. Parameters selection based on luck and attentivness.
