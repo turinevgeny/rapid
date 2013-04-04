@@ -7,14 +7,14 @@
 using namespace std;
 using namespace cv;
 
-// model traits and handling methods
+// Model traits and handling methods
 #include "Model.hpp"
 
-// points in model coords related with the particular video file
+// Points in model coords related with the particular video file
 #include "new1.hpp"
 
 // Camera calibrating output
-const char filename[] = "../../Calibrating/out_camera_data.xml";
+const char filename[] = "out_camera_data.xml";
 
 void help()
 {
@@ -30,9 +30,9 @@ void help()
 
 int main(int argn, char* argv[])
 {
-
 	// opening video
 	VideoCapture cap(videoFile);	// open the video file
+
 	if(!cap.isOpened())				// check if we succeeded
 	{
 		cout << "The video" << videoFile << " could not be loaded." << endl;
@@ -43,50 +43,37 @@ int main(int argn, char* argv[])
 	
 	Mat frame;
 
-	if (!cap.read(frame))	// try to grab a frame from the video file
+	// trying to grab a frame from the video file
+	if (!cap.read(frame))	
 	{
 		cout << "A frame could not be loaded" << endl;
-		return -1;
+		help();
+		return -2;
 	}
-
-	/*
-	vector<int> compression_params;
-	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
-	compression_params.push_back(95);
-
-	try {
-		imwrite("1stframe.jpg", frame, compression_params);
-	}
-	catch (runtime_error& ex) {
-		fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-		return 1;
-	}
-	*/
 	
-	FileStorage camera_data;
-	camera_data.open(filename, FileStorage::READ);
+	// Reading calibration data
+	FileStorage Camera_Data;
+	Camera_Data.open(filename, FileStorage::READ);
 	
-	if (!camera_data.isOpened())
+	if (!Camera_Data.isOpened())
 	{
 		cerr << "Failed to open " << filename << endl;
 		help();
-		return 1;
+		return -3;
 	}
 
 	Mat Camera_Matrix;
 	Mat Distortion_Coefficients;
-	//Mat Extrinsic_Parameters; 
-	Mat Image_points;
+	Mat Image_Points;
 
-	camera_data["Camera_Matrix"] >> Camera_Matrix;
-	camera_data["Distortion_Coefficients"] >> Distortion_Coefficients;
-	//camera_data["Extrinsic_Parameters"] >> Extrinsic_Parameters;
+	Camera_Data["Camera_Matrix"] >> Camera_Matrix;
+	Camera_Data["Distortion_Coefficients"] >> Distortion_Coefficients;
+
+	Camera_Data.release();
 
 	cout << Camera_Matrix << endl
-		<< Distortion_Coefficients << endl << endl
-		//<< Extrinsic_Parameters.row(1) << endl << endl
-		//<< Extrinsic_Parameters.row(2) << endl << endl
-		;
+		 << Distortion_Coefficients << endl
+		 ;
 
 	Model model(T, p, 4, Camera_Matrix, Distortion_Coefficients);
 

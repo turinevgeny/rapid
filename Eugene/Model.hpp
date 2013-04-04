@@ -3,28 +3,24 @@
 
 #include <opencv2/core/core.hpp>
 #include <list>
-using namespace std;
-using namespace cv;
 
 class Model
 {
 private:
-	Mat				T;					// model coordinate system origin in camera coords
-	Mat				cornerPoints[8];	// corner points in model coords
-	double			scaleCoeff;			// for explicit projecting. Obsolete.
-	Mat				Camera_Matrix, Distortion_Coefficients;
-	list<Mat*>		controlPoints;		// list of control points
-	int				pointsPerEdge;
+	cv::Mat					T;					// model coordinate system origin in camera coords
+	cv::Mat					cornerPoints[8];	// corner points in model coords
+	double					scaleCoeff;			// for explicit projecting. Obsolete.
+	cv::Mat					cameraMatrix, distortionCoefficients;
+	std::list<cv::Mat>		controlPoints;		// list of control points
+	int						pointsPerEdge;
 public:
-					Model(const Mat &T, const Mat *cornerPoints, double scaleCoeff);
-					Model(const Mat &T, const Mat *cornerPoints, const Mat &Camera_Matrix, const Mat &Distortion_Coefficients);
-					Model(const Mat &T, const Mat *cornerPoints, int pointsPerEdge, const Mat &Camera_Matrix, const Mat &Distortion_Coefficients);
+					Model(const cv::Mat &T, const cv::Mat *cornerPoints, int pointsPerEdge, const cv::Mat &cameraMatrix, const cv::Mat &distortionCoefficients);
 					~Model();
-	Mat				Outline(const Mat &source);				// projects the model onto the image
+	cv::Mat			Outline(const cv::Mat &source);			// projects the model onto the image
 private:
-	Point2d			Project(const Mat &_3DPoint, const Mat &rotationVector, const Mat &translateVector);
-	Point2d			Project(const Mat &_3DPoint);
-	Point2d			Project(const Mat &_3DPoint, double scaleCoeff, const Point2d &translateVector);
+	cv::Point2d		Project(const cv::Mat &_3DPoint, const cv::Mat &rotationVector, const cv::Mat &translateVector);
+	cv::Point2d		Project(const cv::Mat &_3DPoint);
+	cv::Point2d		Project(const cv::Mat &_3DPoint, double scaleCoeff, const cv::Point2d &translateVector);
 	void			SetControlPoints();						// fills control points list with points evenly located on the edges
 	void            AddControlPointsFromTheEdge(int i, int j);
 };

@@ -8,7 +8,7 @@
 
 #define PI 3.1415926535897932
 
-const char videoFile[] = "../../BoxVideo2/new1.MOV";
+const char videoFile[] = "../test.MOV";
 
 // all distances are expressed in millimeters
 
@@ -32,7 +32,5 @@ const Mat p[8] = {
 	(Mat_<double>(1,3) << b, -c, a)*rotateMatrix,		// top rear point on the right side
 	(Mat_<double>(1,3) << 0, -c, a)*rotateMatrix		// top rear point in the left side
 };
-
-const double scaleCoeff = 600.0;
 
 #endif
