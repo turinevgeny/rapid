@@ -6,13 +6,9 @@
 
 #include "BoxSizes.hpp"
 
-<<<<<<< HEAD:src/new1.hpp
 #define PI 3.1415926535897932
 
 const char videoFile[] = "video/test.MOV";
-=======
-const char videoFile[] = "../test.MOV";
->>>>>>> ce45a884023250750a73f11dfd4d270d3ad6035f:Eugene/new1.hpp
 
 // all distances are expressed in millimeters
 
