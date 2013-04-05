@@ -7,17 +7,26 @@ using namespace cv;
 // using std::cout;
 // using std::endl;
 
-Model::Model(const Mat &_T,
-			 const Mat *_cornerPoints,
-			 int        _pointsPerEdge,
-			 const Mat &_cameraMatrix,
-			 const Mat &_distortionCoefficients)
-	
+Model::Model(const Mat &_T, const Mat *_cornerPoints, int _pointsPerEdge, const Mat &_cameraMatrix, const Mat &_distortionCoefficients)
 {
 	T = _T.clone();
 
 	for(int i = 0; i < 8; i++)
-		cornerPoints[i] = _cornerPoints[i].clone();
+		cornerPoints.push_back(_cornerPoints[i].clone());
+
+	cameraMatrix = _cameraMatrix.clone();
+	distortionCoefficients = _distortionCoefficients.clone();
+
+	pointsPerEdge = _pointsPerEdge;
+	SetControlPoints();
+}
+
+Model::Model(const Mat &_T, const std::vector<Mat> _cornerPoints, int _pointsPerEdge, const Mat &_cameraMatrix, const Mat &_distortionCoefficients)
+{
+	T = _T.clone();
+
+	for(unsigned int i = 0; i < _cornerPoints.size(); i++)
+		cornerPoints.push_back(_cornerPoints[i].clone());
 
 	cameraMatrix = _cameraMatrix.clone();
 	distortionCoefficients = _distortionCoefficients.clone();
@@ -28,13 +37,19 @@ Model::Model(const Mat &_T,
 
 Model::~Model()
 {
-	std::list<Mat>::iterator iter = controlPoints.begin();
-	while (iter != controlPoints.end())
+	std::list<Mat>::iterator controlPointsIter = controlPoints.begin();
+	while (controlPointsIter != controlPoints.end())
 	{
-		iter->release();
-		iter++;
+		controlPointsIter->release();
+		controlPointsIter++;
 	}
-	std::cout << controlPoints.size();
+
+	std::vector<Mat>::iterator cornerPointsIter = cornerPoints.begin();
+	while (cornerPointsIter != cornerPoints.end())
+	{
+		cornerPointsIter->release();
+		cornerPointsIter++;
+	}
 }
 
 // Projecting points manually. Parameters selection based on luck and attentivness.
@@ -107,7 +122,7 @@ Mat Model::Outline(const Mat &source)
 	std::list<Mat>::iterator iter = controlPoints.begin();
 	while (iter != controlPoints.end())
 	{
-		circle(result, Project((*iter), rotationVector, translateVector), 5, CV_RGB(255, 255, 255));
+		circle(result, Project((*iter), rotationVector, translateVector), 5, Scalar(Scalar::all(255)));
 		iter++;
 	}
 
@@ -123,11 +138,11 @@ void Model::AddControlPointsFromTheEdge(int i, int j)
 
     Mat p;
 
-    p = T+cornerPoints[i] - direction*offset;
+    p = T + cornerPoints[i] - direction*offset;
     controlPoints.push_back(p);
 	p.release();
 
-    p = T+cornerPoints[i] - direction*(1-offset);
+    p = T + cornerPoints[i] - direction*(1 - offset);
     controlPoints.push_back(p);
 	p.release();
 
