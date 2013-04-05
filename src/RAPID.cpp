@@ -14,7 +14,6 @@ using namespace cv;
 #include "new1.hpp"
 
 // Camera calibrating output
-const char filename[] = "out_camera_data.xml";
 
 void help()
 {
@@ -23,18 +22,28 @@ void help()
 		<< "RAPID - A Video Rate Object Tracker" << endl
 		<< "Real-time attitude and position determination of a known 3D object" << endl
 		<< "Usage:" << endl
-		<< "./RAPID" << endl
+		<< "./RAPID calibrationData" << endl
+		<< "calibrationData - XML or YAML file containing camera calibration data." << endl
 		<< "--------------------------------------------------------------------------" << endl
 		<< endl;
 }
 
 int main(int argn, char* argv[])
 {
+	// checking command line arguments
+	if (argn < 2)
+	{
+		help();
+		cout << "Not enough parameters" << endl;
+		return -1;
+	}
+
 	// opening video
 	VideoCapture cap(videoFile);	// open the video file
 
 	if(!cap.isOpened())				// check if we succeeded
 	{
+		help();
 		cout << "The video" << videoFile << " could not be loaded." << endl;
 		return -1;
 	}
@@ -46,25 +55,24 @@ int main(int argn, char* argv[])
 	// trying to grab a frame from the video file
 	if (!cap.read(frame))	
 	{
-		cout << "A frame could not be loaded" << endl;
 		help();
+		cout << "A frame could not be loaded" << endl;
 		return -2;
 	}
-	
-	// Reading calibration data
+
+	// reading calibration data
 	FileStorage Camera_Data;
-	Camera_Data.open(filename, FileStorage::READ);
+	Camera_Data.open(argv[1], FileStorage::READ);
 	
 	if (!Camera_Data.isOpened())
 	{
-		cerr << "Failed to open " << filename << endl;
+		cerr << "Failed to open " << argv[1] << endl;
 		help();
 		return -3;
 	}
 
 	Mat Camera_Matrix;
 	Mat Distortion_Coefficients;
-	Mat Image_Points;
 
 	Camera_Data["Camera_Matrix"] >> Camera_Matrix;
 	Camera_Data["Distortion_Coefficients"] >> Distortion_Coefficients;
