@@ -15,12 +15,13 @@ private:
 public:
 					Model(const cv::Mat &T, const cv::Mat *cornerPoints, int pointsPerEdge, const cv::Mat &cameraMatrix, const cv::Mat &distortionCoefficients);
 					Model(const cv::Mat &T, const std::vector<cv::Mat> cornerPoints, int pointsPerEdge, const cv::Mat &cameraMatrix, const cv::Mat &distortionCoefficients);
+					Model(const Model &model);
 					~Model();
 	cv::Mat			Outline(const cv::Mat &source);			// projects the model onto the image
 private:
-	cv::Point2d		Project(const cv::Mat &_3DPoint, const cv::Mat &rotationVector, const cv::Mat &translateVector);
-	cv::Point2d		Project(const cv::Mat &_3DPoint);
-	cv::Point2d		Project(const cv::Mat &_3DPoint, double scaleCoeff, const cv::Point2d &translateVector);
+	cv::Point2d		Project(const cv::Mat &_3DPoint, const cv::Mat &rotationVector, const cv::Mat &translateVector) const;
+	cv::Point2d		Project(const cv::Mat &_3DPoint) const;
+	cv::Point2d		Project(const cv::Mat &_3DPoint, double scaleCoeff, const cv::Point2d &translateVector) const;
 	void			SetControlPoints();						// fills control points list with points evenly located on the edges
 	void            AddControlPointsFromTheEdge(int i, int j);
 };

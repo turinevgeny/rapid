@@ -35,6 +35,11 @@ Model::Model(const Mat &_T, const std::vector<Mat> _cornerPoints, int _pointsPer
 	SetControlPoints();
 }
 
+Model::Model(const Model &model)
+{
+	
+}
+
 Model::~Model()
 {
 	std::list<Mat>::iterator controlPointsIter = controlPoints.begin();
@@ -53,7 +58,7 @@ Model::~Model()
 }
 
 // Projecting points manually. Parameters selection based on luck and attentivness.
-Point2d Model::Project(const Mat& _3DPoint, double scaleCoeff, const Point2d &translateVector)
+Point2d Model::Project(const Mat& _3DPoint, double scaleCoeff, const Point2d &translateVector) const
 {
 	// projecting
 	Point2d point(_3DPoint.at<double>(0,0) / (_3DPoint.at<double>(0,2)),
@@ -69,7 +74,7 @@ Point2d Model::Project(const Mat& _3DPoint, double scaleCoeff, const Point2d &tr
 }
 
 // Manual projecting based on camera calibrating data.
-Point2d Model::Project(const Mat& _3DPoint)
+Point2d Model::Project(const Mat& _3DPoint) const
 {
 	double x = _3DPoint.at<double>(0,0) / _3DPoint.at<double>(0,2);
 	double y = _3DPoint.at<double>(0,1) / _3DPoint.at<double>(0,2);
@@ -86,7 +91,7 @@ Point2d Model::Project(const Mat& _3DPoint)
 }
 
 // Projecting using OpenCV function
-Point2d Model::Project(const Mat& _3DPoint, const Mat &_rotationVector, const Mat &_translateVector)
+Point2d Model::Project(const Mat& _3DPoint, const Mat &_rotationVector, const Mat &_translateVector) const
 {
 	std::vector<Point2d> projectedPoints;
 	projectPoints(_3DPoint, _rotationVector, _translateVector, cameraMatrix, distortionCoefficients, projectedPoints);
