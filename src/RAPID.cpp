@@ -9,11 +9,11 @@ using namespace cv;
 
 // Model traits and handling methods
 #include "Model.hpp"
+// Algorithm wrapper
+#include "RAPIDTracker.h"
 
 // Points in model coords related with the particular video file
 #include "new1.hpp"
-
-// Camera calibrating output
 
 void help()
 {
