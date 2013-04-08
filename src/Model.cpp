@@ -7,6 +7,11 @@ using namespace cv;
 // using std::cout;
 // using std::endl;
 
+Model::Model()
+{
+
+}
+
 Model::Model(const Mat &_T, const Mat *_cornerPoints, int _pointsPerEdge, const Mat &_cameraMatrix, const Mat &_distortionCoefficients)
 {
 	T = _T.clone();
@@ -33,11 +38,6 @@ Model::Model(const Mat &_T, const std::vector<Mat> _cornerPoints, int _pointsPer
 
 	pointsPerEdge = _pointsPerEdge;
 	SetControlPoints();
-}
-
-Model::Model(const Model &model)
-{
-	
 }
 
 Model::~Model()
@@ -74,6 +74,7 @@ Point2d Model::Project(const Mat& _3DPoint, double scaleCoeff, const Point2d &tr
 }
 
 // Manual projecting based on camera calibrating data.
+/*
 Point2d Model::Project(const Mat& _3DPoint) const
 {
 	double x = _3DPoint.at<double>(0,0) / _3DPoint.at<double>(0,2);
@@ -89,6 +90,7 @@ Point2d Model::Project(const Mat& _3DPoint) const
 
 	return Point2d(u,v);
 }
+*/
 
 // Projecting using OpenCV function
 Point2d Model::Project(const Mat& _3DPoint, const Mat &_rotationVector, const Mat &_translateVector) const
@@ -108,27 +110,35 @@ Mat Model::Outline(const Mat &source)
 	Mat rotationVector(3, 1, CV_32F, Scalar::all(0));
 
 	// drawing edges
-	line(result, Project(T+cornerPoints[0], rotationVector, translateVector), Project(T+cornerPoints[1], rotationVector, translateVector), whiteColor, 2, 8);
-	line(result, Project(T+cornerPoints[1], rotationVector, translateVector), Project(T+cornerPoints[2], rotationVector, translateVector), whiteColor, 2, 8);
- 	line(result, Project(T+cornerPoints[2], rotationVector, translateVector), Project(T+cornerPoints[3], rotationVector, translateVector), whiteColor, 2, 8);
-	line(result, Project(T+cornerPoints[0], rotationVector, translateVector), Project(T+cornerPoints[4], rotationVector, translateVector), whiteColor, 2, 8);
+	line(result, Project(T+cornerPoints[0]), Project(T+cornerPoints[1]), whiteColor, 2, 8);
+	line(result, Project(T+cornerPoints[1]), Project(T+cornerPoints[2]), whiteColor, 2, 8);
+ 	line(result, Project(T+cornerPoints[2]), Project(T+cornerPoints[3]), whiteColor, 2, 8);
+	line(result, Project(T+cornerPoints[0]), Project(T+cornerPoints[4]), whiteColor, 2, 8);
  
- 	line(result, Project(T+cornerPoints[4], rotationVector, translateVector), Project(T+cornerPoints[5], rotationVector, translateVector), whiteColor, 2, 8);
- 	line(result, Project(T+cornerPoints[5], rotationVector, translateVector), Project(T+cornerPoints[6], rotationVector, translateVector), whiteColor, 2, 8);
-	line(result, Project(T+cornerPoints[6], rotationVector, translateVector), Project(T+cornerPoints[7], rotationVector, translateVector), whiteColor, 2, 8);
-	line(result, Project(T+cornerPoints[7], rotationVector, translateVector), Project(T+cornerPoints[4], rotationVector, translateVector), whiteColor, 2, 8);
+ 	line(result, Project(T+cornerPoints[4]), Project(T+cornerPoints[5]), whiteColor, 2, 8);
+ 	line(result, Project(T+cornerPoints[5]), Project(T+cornerPoints[6]), whiteColor, 2, 8);
+	line(result, Project(T+cornerPoints[6]), Project(T+cornerPoints[7]), whiteColor, 2, 8);
+	line(result, Project(T+cornerPoints[7]), Project(T+cornerPoints[4]), whiteColor, 2, 8);
 
- 	line(result, Project(T+cornerPoints[0], rotationVector, translateVector), Project(T+cornerPoints[3], rotationVector, translateVector), whiteColor, 2, 8);
-	line(result, Project(T+cornerPoints[1], rotationVector, translateVector), Project(T+cornerPoints[5], rotationVector, translateVector), whiteColor, 2, 8);
-	line(result, Project(T+cornerPoints[2], rotationVector, translateVector), Project(T+cornerPoints[6], rotationVector, translateVector), whiteColor, 2, 8);
-	line(result, Project(T+cornerPoints[3], rotationVector, translateVector), Project(T+cornerPoints[7], rotationVector, translateVector), whiteColor, 2, 8);
+ 	line(result, Project(T+cornerPoints[0]), Project(T+cornerPoints[3]), whiteColor, 2, 8);
+	line(result, Project(T+cornerPoints[1]), Project(T+cornerPoints[5]), whiteColor, 2, 8);
+	line(result, Project(T+cornerPoints[2]), Project(T+cornerPoints[6]), whiteColor, 2, 8);
+	line(result, Project(T+cornerPoints[3]), Project(T+cornerPoints[7]), whiteColor, 2, 8);
 
 	// drawing cotrol points
-	std::list<Mat>::iterator iter = controlPoints.begin();
-	while (iter != controlPoints.end())
+	std::list<Mat>::iterator controlPointsIter = controlPoints.begin();
+	while (controlPointsIter != controlPoints.end())
 	{
-		circle(result, Project((*iter), rotationVector, translateVector), 5, Scalar(Scalar::all(255)));
-		iter++;
+		circle(result, Project((*controlPointsIter), rotationVector, translateVector), 5, Scalar(Scalar::all(255)));
+		controlPointsIter++;
+	}
+
+	// drawing companion points
+	std::list<Mat>::iterator companionPointsIter = companionPoints.begin();
+	while (companionPointsIter != companionPoints.end())
+	{
+		circle(result, Project((*companionPointsIter), rotationVector, translateVector), 5, Scalar(0,255,0) );
+		companionPointsIter++;
 	}
 
 	return result;
@@ -139,23 +149,39 @@ void Model::AddControlPointsFromTheEdge(int i, int j)
 {
     const double offset = 0.15;
 
+	const double companionPointsOffset = 0.3;
+
 	const Mat direction = cornerPoints[i] - cornerPoints[j];
 
-    Mat p;
+    Mat p, s;
 
     p = T + cornerPoints[i] - direction*offset;
     controlPoints.push_back(p);
 	p.release();
 
+	s = T + cornerPoints[i] - direction*companionPointsOffset*2;
+	companionPoints.push_back(s);
+	s.release();
+	
+
     p = T + cornerPoints[i] - direction*(1 - offset);
     controlPoints.push_back(p);
 	p.release();
+
+	s = T + cornerPoints[i] - direction*(1-companionPointsOffset*2);
+	companionPoints.push_back(s);
+	s.release();
+
 
     for (int k = 1; k < pointsPerEdge-1; k++)
 	{
 		p = T+cornerPoints[i] - direction*(k / (double) (pointsPerEdge-1));
 		controlPoints.push_back(p);
 		p.release();
+
+		s = T + cornerPoints[i] - direction*(k / (double) (pointsPerEdge-1) + companionPointsOffset);
+		companionPoints.push_back(s);
+		s.release();
 	}
 }
 
@@ -169,11 +195,16 @@ void Model::SetControlPoints()
 
 	AddControlPointsFromTheEdge(4, 5);
 	AddControlPointsFromTheEdge(5, 6);
- 	AddControlPointsFromTheEdge(6, 7);
+	AddControlPointsFromTheEdge(6, 7);
 	AddControlPointsFromTheEdge(7, 4);
 
 	AddControlPointsFromTheEdge(0, 3);
 	AddControlPointsFromTheEdge(1, 5);
 	AddControlPointsFromTheEdge(2, 6);
 	AddControlPointsFromTheEdge(3, 7);
+}
+
+void Model::RotateAndTranslate(const Mat &rotationVector, const Mat &translateVector)
+{
+
 }
