@@ -10,7 +10,7 @@ using namespace cv;
 // Model traits and handling methods
 #include "Model.hpp"
 // Algorithm wrapper
-#include "RAPIDTracker.h"
+//#include "RAPIDTracker.h"
 
 // Points in model coords related with the particular video file
 #include "new1.hpp"
@@ -83,7 +83,7 @@ int main(int argn, char* argv[])
 		 << Distortion_Coefficients << endl
 		 ;
 
-	Model model(T, p, 4, Camera_Matrix, Distortion_Coefficients);
+	Model model(T, p, 3, Camera_Matrix, Distortion_Coefficients);
 
 	frame = model.Outline(frame);
 
