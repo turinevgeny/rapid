@@ -106,9 +106,6 @@ Mat Model::Outline(const Mat &source)
 
 	Scalar whiteColor = Scalar(Scalar::all(255));
 
-	Mat translateVector = (Mat_<double>(3,1) << -12, 11, 90);
-	Mat rotationVector(3, 1, CV_32F, Scalar::all(0));
-
 	// drawing edges
 	line(result, Project(T+cornerPoints[0]), Project(T+cornerPoints[1]), whiteColor, 2, 8);
 	line(result, Project(T+cornerPoints[1]), Project(T+cornerPoints[2]), whiteColor, 2, 8);
@@ -129,7 +126,7 @@ Mat Model::Outline(const Mat &source)
 	std::list<Mat>::iterator controlPointsIter = controlPoints.begin();
 	while (controlPointsIter != controlPoints.end())
 	{
-		circle(result, Project((*controlPointsIter), rotationVector, translateVector), 5, Scalar(Scalar::all(255)));
+		circle(result, Project((*controlPointsIter)), 5, Scalar(Scalar::all(255)));
 		controlPointsIter++;
 	}
 
@@ -137,7 +134,7 @@ Mat Model::Outline(const Mat &source)
 	std::list<Mat>::iterator companionPointsIter = companionPoints.begin();
 	while (companionPointsIter != companionPoints.end())
 	{
-		circle(result, Project((*companionPointsIter), rotationVector, translateVector), 5, Scalar(0,255,0) );
+		circle(result, Project((*companionPointsIter)), 5, Scalar(0,255,0) );
 		companionPointsIter++;
 	}
 
