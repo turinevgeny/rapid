@@ -6,7 +6,7 @@
 
 class Model
 {
-private:
+public:
 	cv::Mat					T;					// model coordinate system origin in camera coords
 	std::vector<cv::Mat>	cornerPoints;		// corner points in model coords
 	cv::Mat					cameraMatrix, distortionCoefficients;
@@ -20,7 +20,7 @@ public:
 					//Model(const Model &model);
 					~Model();
 	cv::Mat			Outline(const cv::Mat &source);			// projects the model onto the image
-private:
+public:
 	void			RotateAndTranslate(const cv::Mat &rotationVector, const cv::Mat &translateVector);
 	cv::Point2d		Project(const cv::Mat &_3DPoint,
 							const cv::Mat &rotationVector = cv::Mat(3, 1, CV_32F, cv::Scalar::all(0)),

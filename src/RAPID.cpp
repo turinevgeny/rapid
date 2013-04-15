@@ -2,6 +2,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+
 #include <iostream>
 
 using namespace std;
@@ -9,6 +10,7 @@ using namespace cv;
 
 // Model traits and handling methods
 #include "Model.hpp"
+#include "RAPIDTracker.hpp"
 // Algorithm wrapper
 //#include "RAPIDTracker.h"
 
@@ -85,10 +87,27 @@ int main(int argn, char* argv[])
 
 	Model model(T, p, 3, Camera_Matrix, Distortion_Coefficients);
 
-	frame = model.Outline(frame);
+	/*frame = model.Outline(frame);
+	imshow("frames", frame);*/
 
-	imshow("frames", frame);
-	waitKey();
+	std::list<Mat>::iterator controlPointsIter = model.controlPoints.begin();
+	std::list<Mat>::iterator companionPointsIter = model.companionPoints.begin();
+	RAPIDTracker r(videoFile,model);
+
+	cap.read(frame);
+	Point2d foundPoint;
+	Point2d controlPoint;
+
+	controlPoint=model.Project(*controlPointsIter);
+
+	double l=r.test(frame,controlPoint,model.Project(*companionPointsIter),foundPoint);
+
+	cout<<"displacement = "<<l<<endl;
+	cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
+	cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
+	//to draw circle with center in foundPoint
+
+	//waitKey();
 
 	return 0;
 }
