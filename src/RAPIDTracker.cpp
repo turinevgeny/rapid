@@ -141,12 +141,12 @@ Model RAPIDTracker::ProcessFrame(const Mat &frame)
 	std::list<Mat>::iterator controlPointsIter = model.controlPoints.begin();
 	std::list<Mat>::iterator companionPointsIter = model.companionPoints.begin();
 
+	Mat edges = ExtractEdges(frame);
+
 	while (controlPointsIter != model.controlPoints.end())
 	{
 		Point2d r = model.Project(*controlPointsIter);
 		Point2d s = model.Project(*companionPointsIter);
-
-		Mat edges = ExtractEdges(frame);
 
 		Point2d foundPoint;
 		cout << "l:" <<  GetDisplacement(r,s,edges,foundPoint) << endl;
