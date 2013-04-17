@@ -31,7 +31,7 @@ Mat RAPIDTracker::ExtractEdges(const Mat &image) const
 }
 
 
-double RAPIDTracker::GetDisplacement(Point2d controlPoint,Point2d companionPoint,const Mat &edges, Point2d &foundPoint)
+double RAPIDTracker::GetDisplacement(Point2d controlPoint, Point2d companionPoint, const Mat &edges, Point2d &foundPoint)
 {
 	double kx=1/model.cameraMatrix.at<double>(0,0);
 	double ky=1/model.cameraMatrix.at<double>(1,1);
@@ -39,6 +39,12 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint,Point2d companionPoint
 
 	double tempX=(companionPoint.x-controlPoint.x);
 	double tempY=(companionPoint.y-controlPoint.y);
+
+	if (tempY < 0)
+	{
+		tempX *= -1;
+		tempY *= -1;
+	}
 
 	double sineAlpha    = tempY/sqrt(tempX*tempX + tempY*tempY);
 	double cosineAlpha  = tempX/sqrt(tempX*tempX + tempY*tempY);
@@ -49,7 +55,6 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint,Point2d companionPoint
 
 	Direction foundDirection;
 	int dx1,dy1,dx2,dy2;
-
 
 	if( (tangentAlpha > (-1)*top) && (tangentAlpha < (-1)*bottom) )
 	{
@@ -73,7 +78,7 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint,Point2d companionPoint
 	{
 		foundDirection=VERTICAL;
 		dx1=0; dy1= 1;
-		dx1=0; dy2=-1;
+		dx2=0; dy2=-1;
 	}
 
 	// findImageEdge
@@ -84,7 +89,6 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint,Point2d companionPoint
 	double currY1=controlPoint.y;
 	double currX2=currX1;
 	double currY2=currY1;
-
 
 	while( (num < 30) && (diff1!=255) && (diff2!=255) )
 	{
@@ -118,8 +122,6 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint,Point2d companionPoint
 			return -num*kx*sineAlpha;
 			break;
 	}
-
-
 	return -1;
 }
 
