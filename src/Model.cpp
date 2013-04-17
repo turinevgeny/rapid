@@ -9,7 +9,7 @@ using namespace cv;
 
 Model::Model()
 {
-
+	
 }
 
 Model::Model(const Mat &_T, const Mat *_cornerPoints, int _pointsPerEdge, const Mat &_cameraMatrix, const Mat &_distortionCoefficients)

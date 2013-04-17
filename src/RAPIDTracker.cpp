@@ -74,7 +74,7 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint, Point2d companionPoin
 		dx1= 1; dy1=0;
 		dx2=-1; dy2=0;
 	}
-	if( (tangentAlpha <= bottom) || (tangentAlpha >= (-1)*bottom) )
+	if( (tangentAlpha <= bottom) && (tangentAlpha >= (-1)*bottom) )
 	{
 		foundDirection=VERTICAL;
 		dx1=0; dy1= 1;
@@ -136,7 +136,7 @@ double RAPIDTracker::test(const Mat &image,Point2d controlPoint,Point2d companio
 
 }*/
 
-/*Model RAPIDTracker::ProcessFrame(const Mat &frame)
+Model RAPIDTracker::ProcessFrame(const Mat &frame)
 {
 	std::list<Mat>::iterator controlPointsIter = model.controlPoints.begin();
 	std::list<Mat>::iterator companionPointsIter = model.companionPoints.begin();
@@ -146,15 +146,15 @@ double RAPIDTracker::test(const Mat &image,Point2d controlPoint,Point2d companio
 		Point2d r = model.Project(*controlPointsIter);
 		Point2d s = model.Project(*companionPointsIter);
 
-		Direction direction = FindSearchDirection(r, s);
-
 		Mat edges = ExtractEdges(frame);
 
-		Point2d imageEdgePoint = FindImageEdge(edges, r, direction);
-
+		Point2d foundPoint;
+		cout << "l:" <<  GetDisplacement(r,s,edges,foundPoint) << endl;
 		
-
 		controlPointsIter++;
 		companionPointsIter++;
 	}
-}*/
+
+	Model model;
+	return model;
+}

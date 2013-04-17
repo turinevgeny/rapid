@@ -2,7 +2,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-
 #include <iostream>
 
 using namespace std;
@@ -10,9 +9,8 @@ using namespace cv;
 
 // Model traits and handling methods
 #include "Model.hpp"
-#include "RAPIDTracker.hpp"
 // Algorithm wrapper
-//#include "RAPIDTracker.h"
+#include "RAPIDTracker.hpp"
 
 // Points in model coords related with the particular video file
 #include "new1.hpp"
@@ -98,14 +96,18 @@ int main(int argn, char* argv[])
 	Point2d foundPoint;
 	Point2d controlPoint;
 
-	controlPoint=model.Project(*controlPointsIter);
+// 	controlPoint=model.Project(*controlPointsIter);
+// 
+// 	double l=r.test(frame,controlPoint,model.Project(*companionPointsIter),foundPoint);
+// 
+// 	cout<<"displacement = "<<l<<endl;
+// 	cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
+// 	cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
+// 	//to draw circle with center in fou
 
-	double l=r.test(frame,controlPoint,model.Project(*companionPointsIter),foundPoint);
-
-	cout<<"displacement = "<<l<<endl;
-	cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
-	cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
-	//to draw circle with center in foundPoint
+	Model model1;
+	RAPIDTracker tracker("", model);
+	model1 = tracker.ProcessFrame(frame);
 
 	//waitKey();
 

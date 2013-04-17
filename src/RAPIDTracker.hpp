@@ -27,7 +27,7 @@ private:
 public:
 	RAPIDTracker(const std::string videoFile, const Model &model);
 	double test(const cv::Mat &image,cv::Point2d controlPoint,cv::Point2d companionPoint,cv::Point2d &foundPoint);
-	/*Model ProcessFrame(const cv::Mat &frame);*/
+	Model ProcessFrame(const cv::Mat &frame);
 };
 
 #endif
