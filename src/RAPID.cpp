@@ -48,7 +48,9 @@ int main(int argn, char* argv[])
 		return -1;
 	}
 
-//	namedWindow("frames", CV_WINDOW_AUTOSIZE);
+	namedWindow("Next: ", CV_WINDOW_AUTOSIZE);
+
+	namedWindow("Current: ", CV_WINDOW_AUTOSIZE);
 	
 	Mat frame;
 
@@ -84,15 +86,18 @@ int main(int argn, char* argv[])
 
 	Model model(T, p, 3, Camera_Matrix, Distortion_Coefficients);
 
-	for(int i=0;i<82;i++)
+	for(int i=0;i<78;i++)
 		cap.read(frame);
 	RAPIDTracker tracker("", model);
 
 	while(cap.read(frame))
 	{
+		Mat prev;
+		prev=model.Outline(frame);
+		imshow("Current: ", prev);
 		Model updatedModel=tracker.ProcessFrame(frame);
 		frame=updatedModel.Outline(frame);
-		imshow("frames", frame);
+		imshow("Next: ", frame);
 
 		waitKey();
 	}

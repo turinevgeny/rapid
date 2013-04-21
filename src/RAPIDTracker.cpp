@@ -28,7 +28,6 @@ Mat RAPIDTracker::ExtractEdges(const Mat &image) const
 	return edges;
 }
 
-
 double RAPIDTracker::GetDisplacement(Point2d controlPoint, Point2d companionPoint, const Mat &edges, Point2d &foundPoint)
 {
 	double kx=1/model.cameraMatrix.at<double>(0,0);
@@ -38,11 +37,11 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint, Point2d companionPoin
 	double tempX=(companionPoint.x-controlPoint.x);
 	double tempY=(companionPoint.y-controlPoint.y);
 
-	if (tempY < 0)
-	{
-		tempX *= -1;
-		tempY *= -1;
-	}
+//	if (tempY < 0)
+//	{
+//		tempX *= -1;
+//		tempY *= -1;
+//	}
 
 	double sineAlpha    = tempY/sqrt(tempX*tempX + tempY*tempY);
 	double cosineAlpha  = tempX/sqrt(tempX*tempX + tempY*tempY);
@@ -90,6 +89,9 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint, Point2d companionPoin
 
 	int cols=edges.cols;
 	int rows=edges.rows;
+
+	diff1=edges.at<uchar>(currY1,currX1);
+	diff2=edges.at<uchar>(currY2,currX2);
 
 	while( (currX1<cols)&&(currX2<cols)&&(currY1<rows)&&(currY2<rows)&&
 		   (currX1>0)&&(currX2>0)&&(currY1>0)&&(currY2>0)&& 
@@ -163,7 +165,8 @@ Model RAPIDTracker::ProcessFrame(const Mat &frame)
 		//cout << "l:" <<  GetDisplacement(r,s,result,foundPoint) << endl;
 		l=GetDisplacement(r,s,edges,foundPoint);
 
-		circle(result, foundPoint, 5, Scalar(0,0,255));
+		circle(result, foundPoint, 4, Scalar(0,0,255));
+		line(result, foundPoint, r,Scalar(0,255,0), 1, 8);
 
 		tempX=(s.x-r.x);
 		tempY=(s.y-r.y);
@@ -184,8 +187,8 @@ Model RAPIDTracker::ProcessFrame(const Mat &frame)
 		c=a*cosineAlpha-b*sineAlpha;
 
 		left +=c*c.t();
-		//right-=c*l;	// why does it move so strange ?????
-		right-=c*abs(l);// why doesn't it move ?????????????
+		right-=c*l;	// why does it move so strange ?????
+		//right-=c*abs(l);// why doesn't it move ?????????????
 
 		controlPointsIter++;
 		companionPointsIter++;
@@ -195,8 +198,8 @@ Model RAPIDTracker::ProcessFrame(const Mat &frame)
 
 	model.updatePose(solution);
 
-	namedWindow("foundPoints", CV_WINDOW_AUTOSIZE);
-	imshow("foundPoints", result);
+	namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);
+	imshow("Current: foundPoints", result);
 
  	return model;
 }
