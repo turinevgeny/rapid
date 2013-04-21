@@ -10,7 +10,7 @@ using namespace cv;
 // Model traits and handling methods
 #include "Model.hpp"
 // Algorithm wrapper
-//#include "RAPIDTracker.h"
+#include "RAPIDTracker.hpp"
 
 // Points in model coords related with the particular video file
 #include "new1.hpp"
@@ -44,11 +44,11 @@ int main(int argn, char* argv[])
 	if(!cap.isOpened())				// check if we succeeded
 	{
 		help();
-		cout << "The video" << videoFile << " could not be loaded." << endl;
+		cout << "The video " << videoFile << " could not be loaded." << endl;
 		return -1;
 	}
 
-	namedWindow("frames", CV_WINDOW_AUTOSIZE);
+//	namedWindow("frames", CV_WINDOW_AUTOSIZE);
 	
 	Mat frame;
 
@@ -79,16 +79,23 @@ int main(int argn, char* argv[])
 
 	Camera_Data.release();
 
-	cout << Camera_Matrix << endl
-		 << Distortion_Coefficients << endl
-		 ;
+	cout <<"Camera_Matrix="<<endl<< Camera_Matrix << endl
+		 << "Distortion_Coefficients="<<endl<<Distortion_Coefficients << endl;
 
 	Model model(T, p, 3, Camera_Matrix, Distortion_Coefficients);
 
-	frame = model.Outline(frame);
+	for(int i=0;i<82;i++)
+		cap.read(frame);
+	RAPIDTracker tracker("", model);
 
-	imshow("frames", frame);
-	waitKey();
+	while(cap.read(frame))
+	{
+		Model updatedModel=tracker.ProcessFrame(frame);
+		frame=updatedModel.Outline(frame);
+		imshow("frames", frame);
+
+		waitKey();
+	}
 
 	return 0;
 }
