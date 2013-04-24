@@ -90,20 +90,21 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint, Point2d companionPoin
 	int cols=edges.cols;
 	int rows=edges.rows;
 
-	diff1=edges.at<uchar>(currY1,currX1);
-	diff2=edges.at<uchar>(currY2,currX2);
+
+// 	diff1=edges.at<uchar>(currY1,currX1);
+// 	diff2=edges.at<uchar>(currY2,currX2);
 
 	while( (currX1<cols)&&(currX2<cols)&&(currY1<rows)&&(currY2<rows)&&
 		   (currX1>0)&&(currX2>0)&&(currY1>0)&&(currY2>0)&& 
 		   (diff1!=255) && (diff2!=255) )
 	{
 		num++;
+		diff1=edges.at<uchar>(currY1,currX1);
+		diff2=edges.at<uchar>(currY2,currX2);
 		currX1+=dx1;
 		currY1+=dy1;
 		currX2+=dx2;
 		currY2+=dy2;
-		diff1=edges.at<uchar>(currY1,currX1);
-		diff2=edges.at<uchar>(currY2,currX2);
 	}
 
 	if(diff1==255)
@@ -195,6 +196,8 @@ Model RAPIDTracker::ProcessFrame(const Mat &frame)
 	}
 	Mat solution;
 	solve(left,right,solution);
+
+	cout << endl << right << endl << left*solution;
 
 	model.updatePose(solution);
 
