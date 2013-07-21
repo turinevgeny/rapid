@@ -1,51 +1,62 @@
 #include "opencv2/opencv.hpp"
-using namespace cv;
+using namespace cv; 
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 using namespace std;
 
 void help()
 {
-	cout
-	<< "--------------------------------------------------------------------------" << endl
-	<< "This program shows you how to read and extract frame from a video file" << endl
-	<< "Usage:" << endl
-	<< "./FramesGrabbing inputvideoName" << endl
-	<< "--------------------------------------------------------------------------" << endl
-	<< endl;
+cout << "\
+------------------------------------------------------------------------\n\
+This tool is provided for frame extracting from a video file            \n\
+Usage:                                                                  \n\
+./FramesGrabbing inputvideoName	NumberOfFrames       				    \n\
+------------------------------------------------------------------------\n\
+";
 }
 
-#define EXTRACT_FRAMES
+// false if failed
+bool ValidateParameters(int argn, char* argv[])
+{
+	if (argn < 3)
+	{
+		cerr << "Not enough parameters" << endl;
+		help();
+		return false;
+	}
+	return true;
+}
 
-#ifdef EXTRACT_FRAMES
-#include <fstream>
-#endif
+// false if failed
+bool OpenVideoFile(VideoCapture &cap, char* fileName)
+{
+	cap.open(fileName);
+	if(!cap.isOpened())  // check if we succeeded
+	{
+		cerr << "The video" << fileName << " could not be opened." << endl;
+		return false;
+	}
+
+	return true;
+}
 
 int main(int argn, char* argv[])
 {
-	help();
-
-	if (argn < 2)
-	{
-		cout << "Not enough parameters" << endl;
-		return -1;
-	}
-
-	VideoCapture cap(argv[1]); // open the default camera
-	if(!cap.isOpened())  // check if we succeeded
-	{
-		cout << "The video" << argv[1] << " could not be loaded." << endl;
-		return -1;
-	}
 	
+	if (!ValidateParameters(argn, argv))
+		return 1;
+
+	VideoCapture cap;
+	if (!OpenVideoFile(cap, argv[1]))
+		return 2;
+
 	namedWindow("edges", CV_WINDOW_AUTOSIZE);
 
-#ifdef EXTRACT_FRAMES
 	ofstream f;
-	f.open("names.txt");
+	f.open(argv[2]);
 	int frameN = 0, ind = 0;
-#endif
 
 	for(;;)
 	{
@@ -57,7 +68,7 @@ int main(int argn, char* argv[])
 		Canny(edges, edges, 20, 100, 3);
 		imshow("edges", edges);
 		//waitKey();
-#ifdef EXTRACT_FRAMES		
+	
 		if (frameN % 31 == 0) {
 			vector<int> compression_params;
 			compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
@@ -71,14 +82,13 @@ int main(int argn, char* argv[])
 			ind++;
 		}
 		frameN++;
-#endif	
+
 		if(waitKey(30) >= 0) break;
 	}
 	
-#ifdef EXTRACT_FRAMES
+
 	cout << frameN;
 	f.close();
-#endif
 
 	// the camera will be deinitialized automatically in VideoCapture destructor
 	return 0;
