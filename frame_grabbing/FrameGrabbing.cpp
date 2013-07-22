@@ -11,7 +11,6 @@ void help()
 cout << "\
 ------------------------------------------------------------------------\n\
 This tool is provided for frame extracting from a video file            \n\
-Do not expect it working precisely :)                                   \n\
 Usage:                                                                  \n\
 ./FramesGrabbing inputvideoName	NumberOfFrames outputFileNameList 	    \n\
 ------------------------------------------------------------------------\n\
@@ -65,8 +64,7 @@ char* GetVideoFileName(char* path)
 	if (!(fileName = strrchr(path, '\\')))
 		if (!(fileName = strrchr(path, '/'))) return path;
 
-	fileName++;
-	return fileName;
+	return ++fileName;
 }
 
 int main(int argn, char* argv[])
@@ -81,7 +79,7 @@ int main(int argn, char* argv[])
 	
 	int expectedNumberOfFrames = atoi(argv[2]);
 
-	int frameExtractingStep = cap.get(CV_CAP_PROP_FRAME_COUNT) / (expectedNumberOfFrames-1);
+	int frameExtractingStep = (int) cap.get(CV_CAP_PROP_FRAME_COUNT) / (expectedNumberOfFrames);
 
 	ofstream fileNamesFile(argv[3]);
 	
@@ -89,11 +87,12 @@ int main(int argn, char* argv[])
 	
 	char* videoName = GetVideoFileName(argv[1]);
 
-	cout << "";
-	cout << "Extracting...";
+	cout << endl << "Extracting...";
 
-	int frameIndex = 0; //magic number, explanation upon request.
-	for(;;)
+	int frameIndex = 0;
+	int framesExtracted = 0;
+
+	while( framesExtracted < expectedNumberOfFrames )
 	{
 		Mat frame;
 		Mat edges;
@@ -105,18 +104,22 @@ int main(int argn, char* argv[])
 		//waitKey();
 	
 		if (frameIndex % frameExtractingStep == 0) {
+			// jpeg parameters
 			vector<int> compression_params;
 			compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
 			compression_params.push_back(95);
 			// feature fails if more than hundred frames are being extracted
-			stringstream niceFrameIndex;
-			if (frameIndex < 10) niceFrameIndex << "0";
-			niceFrameIndex << frameIndex / frameExtractingStep;
+			stringstream niceExtractedFrameIndex;
+			if (frameIndex / frameExtractingStep < 10) niceExtractedFrameIndex << "0";
+			niceExtractedFrameIndex << frameIndex / frameExtractingStep;
+			// building the filename
 			stringstream frameName;
-			frameName << videoName << niceFrameIndex.str() << ".jpg";
+			frameName << videoName << niceExtractedFrameIndex.str() << ".jpg";
+			// writing jpeg
 			imwrite(frameName.str(), frame, compression_params);
-
-			fileNamesFile << ""+niceFrameIndex.str() + ".jpg" << endl;
+			// logging written files
+			fileNamesFile << videoName << niceExtractedFrameIndex.str() << ".jpg" << endl;
+			framesExtracted++;
 		}
 		frameIndex++;
 	}
