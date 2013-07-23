@@ -1,5 +1,5 @@
 #include "opencv2/opencv.hpp"
-using namespace cv; 
+using namespace cv;
 
 #include <iostream>
 #include <sstream>
@@ -36,7 +36,7 @@ bool ValidateParameters(int argn, char* argv[])
 
 	if (atoi(argv[2]) <= 0)
 	{
-		cerr << "Number of frames expected to be postitive." << endl;
+		cerr << "Number of frames are expected to be postitive." << endl;
 		help();
 		return false;
 	}
@@ -57,7 +57,7 @@ bool OpenVideoFile(VideoCapture &cap, char* fileName)
 	return true;
 }
 
-// extracts file name from the path
+// extracts file name from its path
 char* GetVideoFileName(char* path)
 {
 	char * fileName;
@@ -79,7 +79,7 @@ int main(int argn, char* argv[])
 	
 	int expectedNumberOfFrames = atoi(argv[2]);
 
-	int frameExtractingStep = (int) cap.get(CV_CAP_PROP_FRAME_COUNT) / (expectedNumberOfFrames);
+	int frameExtractingStep = cap.get(CV_CAP_PROP_FRAME_COUNT) / expectedNumberOfFrames;
 
 	ofstream fileNamesFile(argv[3]);
 	
@@ -87,7 +87,7 @@ int main(int argn, char* argv[])
 	
 	char* videoName = GetVideoFileName(argv[1]);
 
-	cout << endl << "Extracting...";
+	cout << endl << "Extracting... ";
 
 	int frameIndex = 0;
 	int framesExtracted = 0;
@@ -112,7 +112,7 @@ int main(int argn, char* argv[])
 			stringstream niceExtractedFrameIndex;
 			if (frameIndex / frameExtractingStep < 10) niceExtractedFrameIndex << "0";
 			niceExtractedFrameIndex << frameIndex / frameExtractingStep;
-			// building the filename
+			// building the file name
 			stringstream frameName;
 			frameName << videoName << niceExtractedFrameIndex.str() << ".jpg";
 			// writing jpeg
