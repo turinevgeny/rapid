@@ -6,7 +6,7 @@
 
 #include "BoxSizes.hpp"
 
-const char videoFile[] = "../video/test.MOV";
+const char videoFile[] = "../../BoxVideo2/new1.MOV";
 
 // all distances are expressed in millimeters
 

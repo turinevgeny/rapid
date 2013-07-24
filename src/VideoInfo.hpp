@@ -3,9 +3,6 @@
 
 class VideoInfo : public VideoInfoBase
 {
-private:
-	cv:Mat[] cornerPoints;
-	const int NumberOfCorners = 8;
 public:
 	VideoInfo(string fileName,
 			  cv::Mat T,
@@ -16,6 +13,9 @@ public:
 	~VideoInfo();
 
 	int GetNumberOfCorners() {return NumberOfCorners;}
+private:
+	cv:Mat[] cornerPoints;
+	const int NumberOfCorners = 8;
 };
 
 #endif

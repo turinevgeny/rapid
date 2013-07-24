@@ -3,11 +3,8 @@
 
 class VideoInfoBase
 {
-private:
-	const int NumberOfCorners = 8;
 public:
-	cv:Mat[] GetCornerPoints() = 0;
-	int GetNumberOfCorners() {return NumberOfCorners;}
+	virtual cv:Mat[] GetCornerPoints() = 0;
 };
 
 #endif
