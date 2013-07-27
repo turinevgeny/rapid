@@ -97,6 +97,11 @@ public:
             }
             else
             {
+				if (IsOpenableVideo(input))
+				{
+					inputType = VIDEO_FILE;
+				}
+				else
                 if (readStringList(input, imageList))
                     {
                         inputType = IMAGE_LIST;
@@ -150,6 +155,13 @@ public:
 
         return result;
     }
+
+	static bool IsOpenableVideo(const string& filenname)
+	{
+		VideoCapture cap(filenname);
+		if (cap.isOpened()) return true;
+		else return false;
+	}
 
     static bool readStringList( const string& filename, vector<string>& l )
     {
