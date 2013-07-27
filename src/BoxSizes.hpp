@@ -4,7 +4,6 @@
 // lengths are expressed in millimeters
 
 const double a = 145.0;
-const double b = 75.0;
-const double c = 55.0;
-
+const double b = 65.0;
+const double c = 45.0;
 #endif
