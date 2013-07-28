@@ -34,6 +34,8 @@ private:
 
 	const int NumberOfCorners;
 	cv::Mat* cornerPoints;
+private:
+	static std::string IntToString(int i);
 };
 
 #endif

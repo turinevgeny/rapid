@@ -2,6 +2,13 @@
 
 #include "VideoInfo.hpp"
 
+std::string VideoInfo::IntToString(int i)
+{
+	std::stringstream number;
+	number << i;
+	return number.str();
+}
+
 cv::FileStorage& operator<<(cv::FileStorage& out, const VideoInfo& c) 
 {
 	out << "VideoInfo";
@@ -13,7 +20,7 @@ cv::FileStorage& operator<<(cv::FileStorage& out, const VideoInfo& c)
 			<< "{";
 					for(int i = 0; i < c.NumberOfCorners; i++)
 					{
-						std::string nodeName =  "cornerPointsInModelCoords" + std::to_string((long double)i);
+						std::string nodeName =  "cornerPointsInModelCoords" + c.IntToString(i);
 						out << nodeName<< c.cornerPointsInModelCoords[i];
 					}
 		 out << "}"
@@ -32,7 +39,7 @@ cv::FileStorage& operator>>(cv::FileStorage& in, VideoInfo& c)
 	cv::FileNode cornerPointsInModelCoordsNode = node["cornerPointsInModelCoords"];
 	for (int i = 0; i < c.NumberOfCorners; i++)
 	{
-		std::string nodeName =  "cornerPointsInModelCoords" + std::to_string((long double)i);
+		std::string nodeName =  "cornerPointsInModelCoords" + c.IntToString(i);
 		cornerPointsInModelCoordsNode[nodeName] >> c.cornerPointsInModelCoords[i];
 	}
 
@@ -41,7 +48,7 @@ cv::FileStorage& operator>>(cv::FileStorage& in, VideoInfo& c)
 
 cv::Mat* VideoInfo::GetCornerPoints()
 {
-	throw std::exception("The method or operation is not implemented.");
+	return cornerPoints;
 }
 
 VideoInfo::VideoInfo() : NumberOfCorners(8) 
