@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project( RAPID )
 
 find_package( OpenCV REQUIRED )
-set(SOURCE RAPID.cpp Model.cpp RAPIDTracker.cpp)
+set(SOURCE RAPID.cpp Model.cpp RAPIDTracker.cpp VideoInfo.cpp)
 
 #SET(SOURCE_LIB Model.cpp)
 #add_library(Model STATIC ${SOURCE_LIB})
