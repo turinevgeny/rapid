@@ -14,27 +14,26 @@ public:
 	//		  cv::Mat rotationMatrix,
 	//		  cv:Mat[] cornerPoints);
 
-	VideoInfo() : NumberOfCorners(8), filename("../../BoxVideo2/new1.MOV") {}
-	virtual ~VideoInfo() {}
+	VideoInfo();
+	virtual ~VideoInfo();
 
 	int GetNumberOfCorners() {return NumberOfCorners;}
 
-public:
 	//Serialization for the class
 	friend cv::FileStorage &operator<<(cv::FileStorage &out, const VideoInfo &c);
 	//Deserialization for the class
 	friend cv::FileStorage &operator>>(cv::FileStorage &in, VideoInfo &c);
 
 	virtual cv::Mat* GetCornerPoints();
-
 private:
+	// Serializable fields
 	std::string filename;
-	//cv::Mat T;
-	//double rotationAngle;
-	//cv::Mat rotationMatrix;
-	//cv::Mat* cornerPointsInModelCoords;
+	cv::Mat T;
+	cv::Mat rotationMatrix;
+	cv::Mat* cornerPointsInModelCoords;
 
 	const int NumberOfCorners;
+	cv::Mat* cornerPoints;
 };
 
 #endif
