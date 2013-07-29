@@ -3,7 +3,7 @@
 
 #include <opencv2/core/core.hpp>
 
-class VideoInfoBase
+class VideoInfoInterface
 {
 public:
 	virtual cv::Mat* GetCornerPoints() = 0;

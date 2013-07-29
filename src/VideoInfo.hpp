@@ -5,7 +5,7 @@
 
 #include "VideoInfoBase.hpp"
 
-class VideoInfo : VideoInfoBase
+class VideoInfo : VideoInfoInterface
 {
 public:
 	//VideoInfo(string fileName,
