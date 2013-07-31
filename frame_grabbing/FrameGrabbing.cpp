@@ -9,18 +9,20 @@ using namespace std;
 void help()
 {
 cout << "\
-------------------------------------------------------------------------\n\
-This tool is provided for frame extracting from a video file            \n\
-Usage:                                                                  \n\
-./FramesGrabbing inputvideoName	NumberOfFrames outputFileNameList 	    \n\
-------------------------------------------------------------------------\n\
+-----------------------------------------------------------------------------------\n\
+This tool is provided for frame extracting from a video file                       \n\
+Usage:                                                                             \n\
+./FramesGrabbing InputVideoName	NumberOfFrames OutputFileNameList LocationOfImages \n\
+Example on Windows:                                                                \n\
+%RAPID%\video\calib.MOV 30 %RAPID%\calib_tool\image_list.xml %RAPID%\frames\       \n\
+-----------------------------------------------------------------------------------\n\
 ";
 }
 
 // false if failed
 bool ValidateParameters(int argn, char* argv[])
 {
-	if (argn < 4)
+	if (argn < 5)
 	{
 		cerr << "Not enough parameters" << endl;
 		help();
@@ -82,7 +84,10 @@ int main(int argn, char* argv[])
 	int frameExtractingStep = cap.get(CV_CAP_PROP_FRAME_COUNT) / expectedNumberOfFrames;
 
 	ofstream fileNamesFile(argv[3]);
-	
+
+    fileNamesFile << "<?xml version=\"1.0\"?>" << endl;
+    fileNamesFile << "<opencv_storage>" << endl << "<images>" << endl;
+
 	//namedWindow("edges", CV_WINDOW_AUTOSIZE);
 	
 	char* videoName = GetVideoFileName(argv[1]);
@@ -114,15 +119,20 @@ int main(int argn, char* argv[])
 			niceExtractedFrameIndex << frameIndex / frameExtractingStep;
 			// building the file name
 			stringstream frameName;
-			frameName << videoName << niceExtractedFrameIndex.str() << ".jpg";
+			frameName << argv[4] << videoName << niceExtractedFrameIndex.str() << ".jpg";
 			// writing jpeg
 			imwrite(frameName.str(), frame, compression_params);
 			// logging written files
-			fileNamesFile << videoName << niceExtractedFrameIndex.str() << ".jpg" << endl;
+			fileNamesFile << argv[4] << videoName << niceExtractedFrameIndex.str() << ".jpg" << endl;
 			framesExtracted++;
 		}
 		frameIndex++;
 	}
+
+    fileNamesFile << "</opencv_storage>" << endl << "</images>" << endl;
+    cout << endl << "Extracted " << framesExtracted << " frames" << endl;
+    cout << "The Location of the extracted frames: " << endl << "    " << argv[4] << endl;
+    cout << "The location of the file with a list of images: " << endl << "   " << argv[3] << endl;
 	cout << "Done." << endl;
 
 	fileNamesFile.close();
