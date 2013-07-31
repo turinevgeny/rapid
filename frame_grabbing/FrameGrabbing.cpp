@@ -4,6 +4,7 @@ using namespace cv;
 #include <iostream>
 #include <sstream>
 #include <fstream>
+
 using namespace std;
 
 void help()
@@ -12,9 +13,9 @@ cout << "\
 -----------------------------------------------------------------------------------\n\
 This tool is provided for frame extracting from a video file                       \n\
 Usage:                                                                             \n\
-./FramesGrabbing InputVideoName	NumberOfFrames OutputFileNameList LocationOfImages \n\
+./FramesGrabbing InputVideoName	NumberOfFrames FileForListImages LocationOfImages  \n\
 Example on Windows:                                                                \n\
-%RAPID%\video\calib.MOV 30 %RAPID%\calib_tool\image_list.xml %RAPID%\frames\       \n\
+%RAPID%\\video\\calib.MOV 30 %RAPID%\\calib_tool\\image_list.xml %RAPID%\\frames\       \n\
 -----------------------------------------------------------------------------------\n\
 ";
 }
@@ -42,6 +43,19 @@ bool ValidateParameters(int argn, char* argv[])
 		help();
 		return false;
 	}
+
+    int len = strlen(argv[3]);
+    char yaml[6], xml[5];
+    yaml[5]=0; xml[4]=0;
+    strncpy(yaml, argv[3]+len-5, 5);
+    strncpy( xml, argv[3]+len-4, 4);
+
+    if( (strcmp(yaml,".yaml")) && (strcmp(xml,".xml")) )
+    {
+        cerr << "FileForListImages must have the extension .xml or .yaml " << endl;
+		help();
+		return false;
+    }
 
 	return true;
 }
@@ -83,10 +97,16 @@ int main(int argn, char* argv[])
 
 	int frameExtractingStep = cap.get(CV_CAP_PROP_FRAME_COUNT) / expectedNumberOfFrames;
 
-	ofstream fileNamesFile(argv[3]);
+    FileStorage fileWithListImages(argv[3], FileStorage::WRITE);
 
-    fileNamesFile << "<?xml version=\"1.0\"?>" << endl;
-    fileNamesFile << "<opencv_storage>" << endl << "<images>" << endl;
+    if (!fileWithListImages.isOpened())
+    {
+        cerr << "Failed to open " << argv[3] << endl;
+        help();
+        return 1;
+    }
+
+    fileWithListImages << "images" << "[";
 
 	//namedWindow("edges", CV_WINDOW_AUTOSIZE);
 	
@@ -107,7 +127,6 @@ int main(int argn, char* argv[])
 		//Canny(edges, edges, 20, 100, 3);
 		//imshow("edges", edges);
 		//waitKey();
-	
 		if (frameIndex % frameExtractingStep == 0) {
 			// jpeg parameters
 			vector<int> compression_params;
@@ -122,20 +141,20 @@ int main(int argn, char* argv[])
 			frameName << argv[4] << videoName << niceExtractedFrameIndex.str() << ".jpg";
 			// writing jpeg
 			imwrite(frameName.str(), frame, compression_params);
-			// logging written files
-			fileNamesFile << argv[4] << videoName << niceExtractedFrameIndex.str() << ".jpg" << endl;
+			// writing filename of image
+			fileWithListImages << frameName.str();
 			framesExtracted++;
 		}
 		frameIndex++;
 	}
 
-    fileNamesFile << "</opencv_storage>" << endl << "</images>" << endl;
+    fileWithListImages << "]";
     cout << endl << "Extracted " << framesExtracted << " frames" << endl;
     cout << "The Location of the extracted frames: " << endl << "    " << argv[4] << endl;
     cout << "The location of the file with a list of images: " << endl << "   " << argv[3] << endl;
 	cout << "Done." << endl;
 
-	fileNamesFile.close();
+	fileWithListImages.release();
 
 	// the camera will be deinitialized automatically in VideoCapture destructor
 	return 0;

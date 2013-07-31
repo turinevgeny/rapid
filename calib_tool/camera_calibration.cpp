@@ -156,9 +156,9 @@ public:
         return result;
     }
 
-	static bool IsOpenableVideo(const string& filenname)
+	static bool IsOpenableVideo(const string& filename)
 	{
-		VideoCapture cap(filenname);
+		VideoCapture cap(filename);
 		if (cap.isOpened()) return true;
 		else return false;
 	}
