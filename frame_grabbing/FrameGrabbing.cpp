@@ -94,8 +94,16 @@ int main(int argn, char* argv[])
 		return 2;
 	
 	int expectedNumberOfFrames = atoi(argv[2]);
+    int totalNumFrames = cap.get(CV_CAP_PROP_FRAME_COUNT);
 
-	int frameExtractingStep = cap.get(CV_CAP_PROP_FRAME_COUNT) / expectedNumberOfFrames;
+    if (totalNumFrames < expectedNumberOfFrames)
+    {
+        cerr<<"The expected number of frames exceeds the total number of frames"<<endl;
+        help();
+        return 3;
+    }
+
+	int frameExtractingStep = totalNumFrames / expectedNumberOfFrames;
 
     FileStorage fileWithListImages(argv[3], FileStorage::WRITE);
 
