@@ -1,6 +1,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 
 #include <iostream>
 
@@ -22,8 +23,9 @@ void help()
 		<< "RAPID - A Video Rate Object Tracker" << endl
 		<< "Real-time attitude and position determination of a known 3D object" << endl
 		<< "Usage:" << endl
-		<< "./RAPID calibrationData" << endl
+		<< "./RAPID calibrationData numberOfFirstFrame" << endl
 		<< "calibrationData - XML or YAML file containing camera calibration data." << endl
+        << "numberOfFirstFrame - Tracking algorithm starts with a given frame in the video" << endl
 		<< "--------------------------------------------------------------------------" << endl
 		<< endl;
 }
@@ -31,12 +33,20 @@ void help()
 int main(int argn, char* argv[])
 {
 	// checking command line arguments
-	if (argn < 2)
+	if (argn < 3)
 	{
 		help();
-		cout << "Not enough parameters" << endl;
+		cerr << "Not enough parameters" << endl;
 		return -1;
 	}
+
+    int firstFrame = atoi(argv[2]);
+    if( !firstFrame )
+    {
+        cerr << "Incorrect number of first frame" << endl;
+		help();
+		return -1;
+    }
 
 	// opening video
 	VideoCapture cap(videoFile);	// open the video file
@@ -47,6 +57,15 @@ int main(int argn, char* argv[])
 		cout << "The video " << videoFile << " could not be loaded." << endl;
 		return -1;
 	}
+
+    int totalNumFrames = cap.get(CV_CAP_PROP_FRAME_COUNT);
+    
+    if ( (totalNumFrames <= firstFrame) || (firstFrame < 0) )
+    {
+        cerr<<"The number of first frame should be positive and less than the total number of frames "<<endl;
+        help();
+        return -1;
+    }
 
 	namedWindow("Next: ", CV_WINDOW_AUTOSIZE);
 
@@ -86,9 +105,43 @@ int main(int argn, char* argv[])
 
 	Model model(T, p, 3, Camera_Matrix, Distortion_Coefficients);
 
-	for(int i=0;i<78;i++)
+    //for ../video/../test.mov firstFrame = 78
+	for(int i=0; i<firstFrame; i++)
 		cap.read(frame);
 	RAPIDTracker tracker("", model);
+
+#if 1
+/*      ---Experiment with SolvePnP method---
+    The experiment were performed with video from dropbox.com(26July_calib_and_track_video/P1090149.MOV)
+    firstFrame = 1945 
+    it's return rvec and tvec for pattern with circles (not yet tested)
+*/
+    vector<Point2f> foundBoardCorners;
+    vector<Point3f> boardPoints;
+    float squareSize = 14;
+    Size boardSize(4, 11);
+    Mat view = frame;
+    Mat rvec, tvec;
+    bool found;
+
+    //calcBoardCornerPositions circles
+    for( int i = 0; i < boardSize.height; i++ )
+        for( int j = 0; j < boardSize.width; j++ )
+            boardPoints.push_back(Point3f(float((2*j + i % 2)*squareSize), float(i*squareSize), 0));
+    
+    found = findCirclesGrid( view, boardSize, foundBoardCorners, 2);
+
+    drawChessboardCorners( view, boardSize, Mat(foundBoardCorners), found );
+    imshow("drawChessboardCorners: ", view);
+
+    if (found) {
+        cout<<"found circles Grid!"<<endl;
+        solvePnP(Mat(boardPoints), Mat(foundBoardCorners), Camera_Matrix,
+                     Distortion_Coefficients, rvec, tvec, false);
+        cout<<"Rotate vector"<<endl<<rvec<<endl<<"Translate vector="<<endl<<tvec<<endl;
+        //cout<<Mat(boardPoints)<<endl<<Mat(foundBoardCorners)<<endl;
+    }
+#endif
 
 	while(cap.read(frame))
 	{
