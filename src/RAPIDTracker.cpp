@@ -197,7 +197,7 @@ Model RAPIDTracker::ProcessFrame(const Mat &frame)
 	Mat solution;
 	solve(left,right,solution);
 
-	cout << endl << right << endl << left*solution<<endl;
+	//cout << endl << "right" << right << endl << "left"<< left*solution<<endl;
 
 	model.updatePose(solution);
 

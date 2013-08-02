@@ -7,7 +7,7 @@ class VideoInfoInterface
 {
 public:
 	virtual cv::Mat* GetCornerPoints() = 0;
-	virtual ~VideoInfoBase() {}
+	virtual ~VideoInfoInterface() {}
 };
 
 #endif
