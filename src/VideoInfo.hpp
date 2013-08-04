@@ -10,9 +10,15 @@ class VideoInfo : VideoInfoInterface
 public:
 	VideoInfo() : cornerPointsInModelCoords(NULL) {}
 
+	// VideoInfoInterface implementation
 	virtual cv::Mat* GetCornerPoints();
-	int GetNumberOfCorners() {return NumberOfCorners;}
-	bool IsInitialized() const {return !(cornerPointsInModelCoords == NULL);}
+	virtual std::string GetVideoPath() { return videoPath; }
+	virtual std::string GetCalibDataPath() { return calibDataPath; }
+
+	int GetNumberOfCorners() const { return numberOfCorners; }
+	cv::Mat GetModelCoordsOrigin() const { return T; }
+
+	bool IsInitialized() const { return !(cornerPointsInModelCoords == NULL); }
 	// Fills the class fields basing on /new1.MOV on Dropbox
 	void MockUp();
 
@@ -24,11 +30,12 @@ public:
 	virtual ~VideoInfo();
 private:
 	// Serializable fields
-	std::string filename;
+	std::string videoPath;
+	std::string calibDataPath;
 	cv::Mat T;
 	cv::Mat rotationMatrix;
 	cv::Mat* cornerPointsInModelCoords;
-	int NumberOfCorners;
+	int numberOfCorners;
 
 	cv::Mat* cornerPoints;
 private:
