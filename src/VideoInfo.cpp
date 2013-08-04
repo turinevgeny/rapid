@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <opencv2/core/core.hpp>
 
 #include "VideoInfo.hpp"
@@ -11,8 +13,15 @@ std::string VideoInfo::IntToString(int i)
 
 cv::FileStorage& operator<<(cv::FileStorage& out, const VideoInfo& c) 
 {
+	if (!c.IsInitialized())
+	{
+		std::cerr << "VideoInfo Error: Instance hasn't been initialized" << std::endl;
+		return out;
+	}
+
 	out << "VideoInfo";
 	out << "{"
+			<< "NumberOfCorners" << c.NumberOfCorners
 			<< "filename" << c.filename
 			<< "T" << c.T
 			<< "rotationMatrix" << c.rotationMatrix
@@ -32,9 +41,13 @@ cv::FileStorage& operator<<(cv::FileStorage& out, const VideoInfo& c)
 cv::FileStorage& operator>>(cv::FileStorage& in, VideoInfo& c)
 {
 	cv::FileNode node = in["VideoInfo"];
+	c.NumberOfCorners = (int) node["NumberOfCorners"];
 	c.filename = (std::string) node["filename"];
 	node["T"] >> c.T;
 	node["rotationMatrix"] >> c.rotationMatrix;
+
+	delete[] c.cornerPointsInModelCoords;
+	c.cornerPointsInModelCoords = new cv::Mat[c.NumberOfCorners];
 
 	cv::FileNode cornerPointsInModelCoordsNode = node["cornerPointsInModelCoords"];
 	for (int i = 0; i < c.NumberOfCorners; i++)
@@ -48,12 +61,20 @@ cv::FileStorage& operator>>(cv::FileStorage& in, VideoInfo& c)
 
 cv::Mat* VideoInfo::GetCornerPoints()
 {
+	for (int i = 0; i < NumberOfCorners; ++i)
+	{
+		cornerPointsInModelCoords[i] *= rotationMatrix;
+	}
+
 	return cornerPoints;
 }
 
-VideoInfo::VideoInfo() : NumberOfCorners(8) 
+void VideoInfo::MockUp()
 {
-	filename = "../../BoxVideo2/new1.MOV";
+
+	NumberOfCorners = 8;
+
+	filename = "../../video/test.MOV";
 	T = (cv::Mat_<double>(1,3) << -15, 120, 352);
 
 	const double a = 145.0;
@@ -62,8 +83,8 @@ VideoInfo::VideoInfo() : NumberOfCorners(8)
 
 	const double alpha = CV_PI/2 - acos(100/a);
 
-	rotationMatrix = (cv::Mat_<double>(3,3) <<  cos(alpha), 0, sin(alpha),
-												0,          1, 0,
+	rotationMatrix = (cv::Mat_<double>(3,3) <<  cos(alpha),  0, sin(alpha),
+												0,           1, 0,
 												-sin(alpha), 0, cos(alpha));
 
 	cornerPointsInModelCoords = new cv::Mat[NumberOfCorners];

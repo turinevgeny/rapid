@@ -8,31 +8,28 @@
 class VideoInfo : VideoInfoInterface
 {
 public:
-	//VideoInfo(string fileName,
-	//		  cv::Mat T,
-	//		  double rotationAngle,
-	//		  cv::Mat rotationMatrix,
-	//		  cv:Mat[] cornerPoints);
+	VideoInfo() : cornerPointsInModelCoords(NULL) {}
 
-	VideoInfo();
-	virtual ~VideoInfo();
-
+	virtual cv::Mat* GetCornerPoints();
 	int GetNumberOfCorners() {return NumberOfCorners;}
+	bool IsInitialized() const {return !(cornerPointsInModelCoords == NULL);}
+	// Fills the class fields basing on /new1.MOV on Dropbox
+	void MockUp();
 
 	//Serialization for the class
 	friend cv::FileStorage &operator<<(cv::FileStorage &out, const VideoInfo &c);
 	//Deserialization for the class
 	friend cv::FileStorage &operator>>(cv::FileStorage &in, VideoInfo &c);
 
-	virtual cv::Mat* GetCornerPoints();
+	virtual ~VideoInfo();
 private:
 	// Serializable fields
 	std::string filename;
 	cv::Mat T;
 	cv::Mat rotationMatrix;
 	cv::Mat* cornerPointsInModelCoords;
+	int NumberOfCorners;
 
-	const int NumberOfCorners;
 	cv::Mat* cornerPoints;
 private:
 	static std::string IntToString(int i);

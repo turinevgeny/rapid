@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <opencv_storage>
 <VideoInfo>
-  <filename>"video/test.MOV"</filename>
+  <NumberOfCorners>8</NumberOfCorners>
+  <filename>"../../video/test.MOV"</filename>
   <T type_id="opencv-matrix">
     <rows>1</rows>
     <cols>3</cols>
@@ -13,8 +14,8 @@
     <cols>3</cols>
     <dt>d</dt>
     <data>
-      7.2413793103448276e-001 0. 6.8965517241379315e-001 0. 1. 0.
-      -6.8965517241379315e-001 0. 7.2413793103448276e-001</data></rotationMatrix>
+      7.2413793103448276e-01 0. 6.8965517241379315e-01 0. 1. 0.
+      -6.8965517241379315e-01 0. 7.2413793103448276e-01</data></rotationMatrix>
   <cornerPointsInModelCoords>
     <cornerPointsInModelCoords0 type_id="opencv-matrix">
       <rows>1</rows>
