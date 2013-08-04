@@ -8,7 +8,7 @@
 class VideoInfo : VideoInfoInterface
 {
 public:
-	VideoInfo() : cornerPointsInModelCoords(NULL) {}
+	VideoInfo() : cornerPointsInModelCoords(NULL), cornerPoints(NULL) {}
 
 	// VideoInfoInterface implementation
 	virtual cv::Mat* GetCornerPoints();

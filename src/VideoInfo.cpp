@@ -63,9 +63,11 @@ cv::FileStorage& operator>>(cv::FileStorage& in, VideoInfo& c)
 
 cv::Mat* VideoInfo::GetCornerPoints()
 {
+	cornerPoints = new cv::Mat[numberOfCorners];
+
 	for (int i = 0; i < numberOfCorners; ++i)
 	{
-		cornerPointsInModelCoords[i] *= rotationMatrix;
+		cornerPoints[i] = cornerPointsInModelCoords[i] * rotationMatrix;
 	}
 
 	return cornerPoints;
@@ -105,4 +107,5 @@ void VideoInfo::MockUp()
 VideoInfo::~VideoInfo()
 {
 	delete[] cornerPointsInModelCoords;
+	delete[] cornerPoints;
 }
