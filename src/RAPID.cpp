@@ -1,33 +1,33 @@
+#include <iostream>
+using namespace std;
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
-
-#include <iostream>
-
-using namespace std;
 using namespace cv;
 
 // Model traits and handling methods
 #include "Model.hpp"
 // Algorithm wrapper
 #include "RAPIDTracker.hpp"
-
-// Points in model coords related with the particular video file
+// VideoInfo struct
+#include "VideoInfo.hpp"
+// Points in model coords corresponding to the particular video file
 #include "new1.hpp"
 
 void help()
 {
-	cout
-		<< "--------------------------------------------------------------------------" << endl
-		<< "RAPID - A Video Rate Object Tracker" << endl
-		<< "Real-time attitude and position determination of a known 3D object" << endl
-		<< "Usage:" << endl
-		<< "./RAPID calibrationData numberOfFirstFrame" << endl
-		<< "calibrationData - XML or YAML file containing camera calibration data." << endl
-        << "numberOfFirstFrame - Tracking algorithm starts with a given frame in the video" << endl
-		<< "--------------------------------------------------------------------------" << endl
-		<< endl;
+	cout << endl <<
+	"\
+--------------------------------------------------------------------------\n\
+RAPID - A Video Rate Object Tracker\n\
+Real-time attitude and position determination of a known 3D object\n\
+Usage:\n\
+./RAPID VideoInfoXmlFile numberOfFirstFrame\n\
+VideoInfoXmlFile - XML or YAML file containing video and model information;\n\
+numberOfFirstFrame - Tracking algorithm starts with a given frame in the video.\n\
+--------------------------------------------------------------------------\n\
+	" << endl;
 }
 
 int main(int argn, char* argv[])
@@ -41,30 +41,43 @@ int main(int argn, char* argv[])
 	}
 
     int firstFrame = atoi(argv[2]);
-    if( !firstFrame )
+    string videoInfoXmlPath = argv[1];
+
+    if (!firstFrame)
     {
-        cerr << "Incorrect number of first frame" << endl;
+        cerr << "Incorrect number of the first frame" << endl;
 		help();
-		return -1;
+		return -2;
     }
 
-	// opening video
-	VideoCapture cap(videoFile);	// open the video file
+    // opening VideoInfo storage
+    VideoInfo videoInfo;
+    FileStorage videoInfoStorage(videoInfoXmlPath, FileStorage::READ);
+    if (!videoInfoStorage.isOpened())
+    {
+    	cerr << "Couldn't open " << videoInfoXmlPath << " file." << endl;
+    	return -3;
+    }
+    videoInfoStorage >> videoInfo;
+    videoInfoStorage.release();
 
-	if(!cap.isOpened())				// check if we succeeded
+	// opening video
+	VideoCapture cap(videoInfo.GetVideoPath());	// open the video file
+
+	if (!cap.isOpened())				// check if we succeeded
 	{
 		help();
-		cout << "The video " << videoFile << " could not be loaded." << endl;
-		return -1;
+		cout << "The video " << videoInfo.GetVideoPath() << " could not be loaded." << endl;
+		return -4;
 	}
 
     int totalNumFrames = cap.get(CV_CAP_PROP_FRAME_COUNT);
     
     if ( (totalNumFrames <= firstFrame) || (firstFrame < 0) )
     {
-        cerr<<"The number of first frame should be positive and less than the total number of frames "<<endl;
+        cerr << "The number of the first frame should be positive and less than the total number of frames." << endl;
         help();
-        return -1;
+        return -5;
     }
 
 	namedWindow("Next: ", CV_WINDOW_AUTOSIZE);
@@ -78,18 +91,18 @@ int main(int argn, char* argv[])
 	{
 		help();
 		cout << "A frame could not be loaded" << endl;
-		return -2;
+		return -6;
 	}
 
 	// reading calibration data
 	FileStorage Camera_Data;
-	Camera_Data.open(argv[1], FileStorage::READ);
+	Camera_Data.open(videoInfo.GetCalibDataPath(), FileStorage::READ);
 	
 	if (!Camera_Data.isOpened())
 	{
-		cerr << "Failed to open " << argv[1] << endl;
+		cerr << "Failed to open " << videoInfo.GetCalibDataPath() << endl;
 		help();
-		return -3;
+		return -7;
 	}
 
 	Mat Camera_Matrix;
@@ -103,7 +116,7 @@ int main(int argn, char* argv[])
 	cout <<"Camera_Matrix="<<endl<< Camera_Matrix << endl
 		 << "Distortion_Coefficients="<<endl<<Distortion_Coefficients << endl;
 
-	Model model(T, p, 3, Camera_Matrix, Distortion_Coefficients);
+	Model model(videoInfo.GetModelCoordsOrigin(), videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients);
 
     //for ../video/../test.mov firstFrame = 78
 	for(int i=0; i<firstFrame; i++)
@@ -112,9 +125,9 @@ int main(int argn, char* argv[])
 
 #if 1
 /*      ---Experiment with SolvePnP method---
-    The experiment were performed with video from dropbox.com(26July_calib_and_track_video/P1090149.MOV)
-    firstFrame = 1945 
-    it's return rvec and tvec for pattern with circles (not yet tested)
+    The experiment was performed using video from dropbox.com(26July_calib_and_track_video/P1090149.MOV)
+    firstFrame = 1945
+    it returns rvec and tvec for a pattern with circles (not yet tested)
 */
     vector<Point2f> foundBoardCorners;
     vector<Point3f> boardPoints;
@@ -143,14 +156,14 @@ int main(int argn, char* argv[])
     }
 #endif
 
-	while(cap.read(frame))
+	while (cap.read(frame))
 	{
 		Mat prev;
-		prev=model.Outline(frame);
-		imshow("Current: ", prev);
-		Model updatedModel=tracker.ProcessFrame(frame);
-		frame=updatedModel.Outline(frame);
-		imshow("Next: ", frame);
+		prev = model.Outline(frame);
+		imshow("Current:", prev);
+		Model updatedModel = tracker.ProcessFrame(frame);
+		frame = updatedModel.Outline(frame);
+		imshow("Next:", frame);
 
 		waitKey();
 	}
