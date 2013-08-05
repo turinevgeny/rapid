@@ -118,11 +118,15 @@ int main(int argn, char* argv[])
 */
     vector<Point2f> foundBoardCorners;
     vector<Point3f> boardPoints;
-    float squareSize = 14;
+    float squareSize = 17.7;
     Size boardSize(4, 11);
     Mat view = frame;
     Mat rvec, tvec;
     bool found;
+
+    // X-axis and Y-axis offset from the center of the reference circle
+    float offsetX = -30; 
+    float offsetY = 7;   
 
     //calcBoardCornerPositions circles
     for( int i = 0; i < boardSize.height; i++ )
@@ -131,16 +135,31 @@ int main(int argn, char* argv[])
     
     found = findCirclesGrid( view, boardSize, foundBoardCorners, 2);
 
-    drawChessboardCorners( view, boardSize, Mat(foundBoardCorners), found );
-    imshow("drawChessboardCorners: ", view);
+    //drawChessboardCorners( view, boardSize, Mat(foundBoardCorners), found );
 
+    //draw reference circle
+    circle(view, foundBoardCorners[40], 2, Scalar(0,255,0) ); //green
+    
     if (found) {
-        cout<<"found circles Grid!"<<endl;
         solvePnP(Mat(boardPoints), Mat(foundBoardCorners), Camera_Matrix,
                      Distortion_Coefficients, rvec, tvec, false);
         cout<<"Rotate vector"<<endl<<rvec<<endl<<"Translate vector="<<endl<<tvec<<endl;
-        //cout<<Mat(boardPoints)<<endl<<Mat(foundBoardCorners)<<endl;
     }
+
+    Mat Box3DPoint(1, 3, CV_32F); 
+
+    Box3DPoint.at<float>(0,0) = boardPoints[40].x - offsetX;
+    Box3DPoint.at<float>(0,1) = boardPoints[40].y + offsetY;
+    Box3DPoint.at<float>(0,2) = boardPoints[40].z;
+
+    Mat expProjectedPoint;
+    projectPoints( Box3DPoint, rvec, tvec, Camera_Matrix, Distortion_Coefficients, expProjectedPoint);
+   
+    Point2d center(expProjectedPoint.at<float>(0,0),expProjectedPoint.at<float>(0,1));
+
+    //draw block's reference point 
+    circle(view, center, 2, Scalar(255,0,0));
+    imshow("drawChessboardCorners: ", view);
 #endif
 
 	while(cap.read(frame))
