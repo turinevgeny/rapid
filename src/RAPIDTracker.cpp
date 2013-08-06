@@ -160,14 +160,14 @@ Model RAPIDTracker::ProcessFrame(const Mat &frame)
 
 	while (controlPointsIter != model.controlPoints.end())
 	{
-		Point2d r = model.Project(model.T+*controlPointsIter);
-		Point2d s = model.Project(model.T+*companionPointsIter);
+		Point2d r = model.Project(/*model.T+*/*controlPointsIter);
+		Point2d s = model.Project(/*model.T+*/*companionPointsIter);
 
 		//cout << "l:" <<  GetDisplacement(r,s,result,foundPoint) << endl;
-		l=GetDisplacement(r,s,edges,foundPoint);
+		l = GetDisplacement(r,s,edges,foundPoint);
 
 		circle(result, foundPoint, 4, Scalar(0,0,255));
-		line(result, foundPoint, r,Scalar(0,255,0), 1, 8);
+		line(result, foundPoint, r, Scalar(0,255,0), 1, 8);
 
 		tempX=(s.x-r.x);
 		tempY=(s.y-r.y);

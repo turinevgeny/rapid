@@ -19,15 +19,15 @@ const Mat rotateMatrix = (Mat_<double>(3,3) <<  cos(alpha), 0, sin(alpha),
 										       -sin(alpha), 0, cos(alpha));
 
 const Mat p[8] = {
-	(Mat_<double>(1,3) << 0, 0, 0)*rotateMatrix,		// bottom anterior point on the left side
-	(Mat_<double>(1,3) << b, 0, 0)*rotateMatrix,		// bottom anterior point on the right side
-	(Mat_<double>(1,3) << b, 0, a)*rotateMatrix,		// bottom rear point on the right side
-	(Mat_<double>(1,3) << 0, 0, a)*rotateMatrix,		// bottom rear point on the left side
+	(Mat_<double>(1,3) << 0, 0, 0),//*rotateMatrix,		// bottom anterior point on the left side
+	(Mat_<double>(1,3) << b, 0, 0),//*rotateMatrix,		// bottom anterior point on the right side
+	(Mat_<double>(1,3) << b, 0, a),//*rotateMatrix,		// bottom rear point on the right side
+	(Mat_<double>(1,3) << 0, 0, a),//*rotateMatrix,		// bottom rear point on the left side
 
-	(Mat_<double>(1,3) << 0, -c, 0)*rotateMatrix,		// top anterior point on the left side
-	(Mat_<double>(1,3) << b, -c, 0)*rotateMatrix,		// top anterior point on the right side
-	(Mat_<double>(1,3) << b, -c, a)*rotateMatrix,		// top rear point on the right side
-	(Mat_<double>(1,3) << 0, -c, a)*rotateMatrix		// top rear point on the left side
+	(Mat_<double>(1,3) << 0, -c, 0),//*rotateMatrix,		// top anterior point on the left side
+	(Mat_<double>(1,3) << b, -c, 0),//*rotateMatrix,		// top anterior point on the right side
+	(Mat_<double>(1,3) << b, -c, a),//*rotateMatrix,		// top rear point on the right side
+	(Mat_<double>(1,3) << 0, -c, a),//*rotateMatrix		// top rear point on the left side
 };
 
 #endif

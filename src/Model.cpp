@@ -12,7 +12,13 @@ Model::Model()
 	
 }
 
-Model::Model(const Mat &_T, const Mat *_cornerPoints, int _pointsPerEdge, const Mat &_cameraMatrix, const Mat &_distortionCoefficients)
+Model::Model(const Mat &_T, 
+             const Mat *_cornerPoints, 
+             int        _pointsPerEdge, 
+             const Mat &_cameraMatrix, 
+             const Mat &_distortionCoefficients,
+             const Mat &_rotationVector,
+             const Mat &_translateVector)
 {
 	T = _T.clone();
 
@@ -22,11 +28,19 @@ Model::Model(const Mat &_T, const Mat *_cornerPoints, int _pointsPerEdge, const 
 	cameraMatrix = _cameraMatrix.clone();
 	distortionCoefficients = _distortionCoefficients.clone();
 
-	pointsPerEdge = _pointsPerEdge;
+	pointsPerEdge   = _pointsPerEdge;
+    rotationVector  = _rotationVector;
+    translateVector = _translateVector;
 	SetControlPoints();
 }
 
-Model::Model(const Mat &_T, const std::vector<Mat> _cornerPoints, int _pointsPerEdge, const Mat &_cameraMatrix, const Mat &_distortionCoefficients)
+Model::Model(const Mat &_T, 
+             const std::vector<Mat> _cornerPoints, 
+             int        _pointsPerEdge, 
+             const Mat &_cameraMatrix, 
+             const Mat &_distortionCoefficients,
+             const Mat &_rotationVector,
+             const Mat &_translateVector)
 {
 	T = _T.clone();
 
@@ -36,7 +50,9 @@ Model::Model(const Mat &_T, const std::vector<Mat> _cornerPoints, int _pointsPer
 	cameraMatrix = _cameraMatrix.clone();
 	distortionCoefficients = _distortionCoefficients.clone();
 
-	pointsPerEdge = _pointsPerEdge;
+	pointsPerEdge   = _pointsPerEdge;
+    rotationVector  = _rotationVector;
+    translateVector = _translateVector;
 	SetControlPoints();
 }
 
@@ -100,10 +116,10 @@ Point2d Model::Project(const Mat& _3DPoint) const
 */
 
 // Projecting using OpenCV function
-Point2d Model::Project(const Mat& _3DPoint, const Mat &_rotationVector, const Mat &_translateVector) const
+Point2d Model::Project(const Mat& _3DPoint) const
 {
 	std::vector<Point2d> projectedPoints;
-	projectPoints(_3DPoint, _rotationVector, _translateVector, cameraMatrix, distortionCoefficients, projectedPoints);
+	projectPoints(_3DPoint, rotationVector, translateVector, cameraMatrix, distortionCoefficients, projectedPoints);
     return projectedPoints[0];
 }
 
@@ -114,26 +130,26 @@ Mat Model::Outline(const Mat &source)
 	Scalar whiteColor = Scalar(Scalar::all(255));
 
 	// drawing edges
-	line(result, Project(T+cornerPoints[0]), Project(T+cornerPoints[1]), whiteColor, 1, 8);
-	line(result, Project(T+cornerPoints[1]), Project(T+cornerPoints[2]), whiteColor, 1, 8);
- 	line(result, Project(T+cornerPoints[2]), Project(T+cornerPoints[3]), whiteColor, 1, 8);
-	line(result, Project(T+cornerPoints[0]), Project(T+cornerPoints[4]), whiteColor, 1, 8);
+	line(result, Project(cornerPoints[0]), Project(cornerPoints[1]), whiteColor, 1, 8);
+	line(result, Project(cornerPoints[1]), Project(cornerPoints[2]), whiteColor, 1, 8);
+ 	line(result, Project(cornerPoints[2]), Project(cornerPoints[3]), whiteColor, 1, 8);
+	line(result, Project(cornerPoints[0]), Project(cornerPoints[4]), whiteColor, 1, 8);
  
- 	line(result, Project(T+cornerPoints[4]), Project(T+cornerPoints[5]), whiteColor, 1, 8);
- 	line(result, Project(T+cornerPoints[5]), Project(T+cornerPoints[6]), whiteColor, 1, 8);
-	line(result, Project(T+cornerPoints[6]), Project(T+cornerPoints[7]), whiteColor, 1, 8);
-	line(result, Project(T+cornerPoints[7]), Project(T+cornerPoints[4]), whiteColor, 1, 8);
+ 	line(result, Project(cornerPoints[4]), Project(cornerPoints[5]), whiteColor, 1, 8);
+ 	line(result, Project(cornerPoints[5]), Project(cornerPoints[6]), whiteColor, 1, 8);
+	line(result, Project(cornerPoints[6]), Project(cornerPoints[7]), whiteColor, 1, 8);
+	line(result, Project(cornerPoints[7]), Project(cornerPoints[4]), whiteColor, 1, 8);
 
- 	line(result, Project(T+cornerPoints[0]), Project(T+cornerPoints[3]), whiteColor, 1, 8);
-	line(result, Project(T+cornerPoints[1]), Project(T+cornerPoints[5]), whiteColor, 1, 8);
-	line(result, Project(T+cornerPoints[2]), Project(T+cornerPoints[6]), whiteColor, 1, 8);
-	line(result, Project(T+cornerPoints[3]), Project(T+cornerPoints[7]), whiteColor, 1, 8);
+ 	line(result, Project(cornerPoints[0]), Project(cornerPoints[3]), whiteColor, 1, 8);
+	line(result, Project(cornerPoints[1]), Project(cornerPoints[5]), whiteColor, 1, 8);
+	line(result, Project(cornerPoints[2]), Project(cornerPoints[6]), whiteColor, 1, 8);
+	line(result, Project(cornerPoints[3]), Project(cornerPoints[7]), whiteColor, 1, 8);
 
 	// drawing cotrol points
 	std::list<Mat>::iterator controlPointsIter = controlPoints.begin();
 	while (controlPointsIter != controlPoints.end())
 	{
-		circle(result, Project(T+*controlPointsIter), 4, Scalar(Scalar::all(255)));
+		circle(result, Project(*controlPointsIter), 4, Scalar(Scalar::all(255)));
 		controlPointsIter++;
 	}
 
@@ -234,7 +250,7 @@ void Model::updatePose(const Mat &solution)
 	while (controlPointsIter != controlPoints.end())
 	{
 		//cout<<"Point= "<<(*controlPointsIter)<<endl;
-		(*controlPointsIter)+=angle.t().cross(*controlPointsIter);
+		(*controlPointsIter)+=angle.t().cross(*controlPointsIter) + distanse.t();
 		//cout<<"newPoint= "<<(*controlPointsIter)<<endl;
 		controlPointsIter++;
 	}
@@ -242,14 +258,14 @@ void Model::updatePose(const Mat &solution)
 	std::list<Mat>::iterator companionPointsIter = companionPoints.begin();
 	while (companionPointsIter != companionPoints.end())
 	{
-		(*companionPointsIter)+=angle.t().cross(*companionPointsIter);
+		(*companionPointsIter)+=angle.t().cross(*companionPointsIter) + distanse.t();
 		companionPointsIter++;
 	}
 
 	std::vector<Mat>::iterator cornerPointsIter = cornerPoints.begin();
 	while (cornerPointsIter != cornerPoints.end())
 	{
-		(*cornerPointsIter)+=angle.t().cross(*cornerPointsIter);
+		(*cornerPointsIter)+=angle.t().cross(*cornerPointsIter) + distanse.t();
 		cornerPointsIter++;
 	}
 
