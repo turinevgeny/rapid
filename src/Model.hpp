@@ -44,6 +44,7 @@ private:
 	cv::Point2d		Project(const cv::Mat &_3DPoint, 
                             double scaleCoeff, 
                             const cv::Point2d &translateVector) const;
+    cv::Point2d     ManualProject(const cv::Mat & _3DPoint) const;
 	void			SetControlPoints();						// fills control points list with points evenly located on the edges
 	void            AddControlPointsFromTheEdge(int i, int j);
 	void			updatePose(const cv::Mat &solution);

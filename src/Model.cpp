@@ -97,11 +97,16 @@ Point2d Model::Project(const Mat& _3DPoint, double scaleCoeff, const Point2d &tr
 }
 
 // Manual projecting based on camera calibrating data.
-/*
-Point2d Model::Project(const Mat& _3DPoint) const
+Point2d Model::ManualProject(const Mat& _3DPoint) const
 {
-	double x = _3DPoint.at<double>(0,0) / _3DPoint.at<double>(0,2);
-	double y = _3DPoint.at<double>(0,1) / _3DPoint.at<double>(0,2);
+    Mat Box3DPoint = _3DPoint.clone();
+    Mat rotationMatrix;
+    Rodrigues(rotationVector, rotationMatrix);
+
+    Box3DPoint = rotationMatrix * Box3DPoint.t() + translateVector;
+
+    double x = Box3DPoint.at<double>(0,0) / Box3DPoint.at<double>(2,0);
+	double y = Box3DPoint.at<double>(1,0) / Box3DPoint.at<double>(2,0);
 
 	double rQuad = x*x+y*y;
 
@@ -113,7 +118,7 @@ Point2d Model::Project(const Mat& _3DPoint) const
 
 	return Point2d(u,v);
 }
-*/
+
 
 // Projecting using OpenCV function
 Point2d Model::Project(const Mat& _3DPoint) const
