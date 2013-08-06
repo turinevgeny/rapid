@@ -16,16 +16,16 @@ using namespace cv;
 void help()
 {
 	cout << endl <<
-    "\
-     --------------------------------------------------------------------------\n\
-    RAPID - A Video Rate Object Tracker\n\
-    Real-time attitude and position determination of a known 3D object\n\
-    Usage:\n\
-    ./RAPID VideoInfoXmlFile numberOfFirstFrame\n\
-    VideoInfoXmlFile - XML or YAML file containing video and model information;\n\
-    numberOfFirstFrame - Tracking algorithm starts with a given frame in the video.\n\
-    --------------------------------------------------------------------------\n\
-    " << endl;
+	"\
+--------------------------------------------------------------------------\n\
+RAPID - A Video Rate Object Tracker\n\
+Real-time attitude and position determination of a known 3D object\n\
+Usage:\n\
+./RAPID VideoInfoXmlFile numberOfFirstFrame\n\
+VideoInfoXmlFile - XML or YAML file containing video and model information;\n\
+numberOfFirstFrame - Tracking algorithm starts with a given frame in the video.\n\
+--------------------------------------------------------------------------\n\
+	" << endl;
 }
 
 int main(int argn, char* argv[])
@@ -41,7 +41,7 @@ int main(int argn, char* argv[])
     int firstFrame = atoi(argv[2]);
     string videoInfoXmlPath = argv[1];
 
-    if( !firstFrame )
+    if (!firstFrame)
     {
         cerr << "Incorrect number of the first frame" << endl;
 		help();
@@ -53,8 +53,8 @@ int main(int argn, char* argv[])
     FileStorage videoInfoStorage(videoInfoXmlPath, FileStorage::READ);
     if (!videoInfoStorage.isOpened())
     {
-        cerr << "Couldn't open " << videoInfoXmlPath << " file." << endl;
-        return -3;
+    	cerr << "Couldn't open " << videoInfoXmlPath << " file." << endl;
+    	return -3;
     }
     videoInfoStorage >> videoInfo;
     videoInfoStorage.release();
@@ -146,6 +146,7 @@ int main(int argn, char* argv[])
         //draw reference circle
         circle(view, foundBoardCorners[40], 2, Scalar(0,255,0), 2); //green
 
+        cout<<"found circles Grid!"<<endl;
         solvePnP(Mat(boardPoints), Mat(foundBoardCorners), Camera_Matrix,
                      Distortion_Coefficients, rvec, tvec, false);
         cout<<"Rotate vector"<<endl<<rvec<<endl<<"Translate vector="<<endl<<tvec<<endl;
