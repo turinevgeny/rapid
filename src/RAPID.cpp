@@ -1,5 +1,8 @@
 #include <iostream>
 using namespace std;
+using std::cout;
+using std::cerr;
+using std::endl;
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -28,90 +31,42 @@ numberOfFirstFrame - Tracking algorithm starts with a given frame in the video.\
 	" << endl;
 }
 
+// false if validation fails
+bool ValidateAndInterpretePrameters(const int argn,
+                                    const char* argv[],
+                                    int& firstFrame,
+                                    VideoInfo& videoInfo,
+                                    cv::VideoCapture& cap,
+                                    cv::Mat& cameraMatrix,
+                                    cv::Mat& distortionCoefficients);
+
 int main(int argn, char* argv[])
 {
-	// checking command line arguments
-	if (argn < 3)
-	{
-		help();
-		cerr << "Not enough parameters" << endl;
-		return -1;
-	}
-
-    int firstFrame = atoi(argv[2]);
-    string videoInfoXmlPath = argv[1];
-
-    if (!firstFrame)
-    {
-        cerr << "Incorrect number of the first frame" << endl;
-		help();
-		return -2;
-    }
-
-    // opening VideoInfo storage
+    int firstFrame;
     VideoInfo videoInfo;
-    FileStorage videoInfoStorage(videoInfoXmlPath, FileStorage::READ);
-    if (!videoInfoStorage.isOpened())
-    {
-    	cerr << "Couldn't open " << videoInfoXmlPath << " file." << endl;
-    	return -3;
-    }
-    videoInfoStorage >> videoInfo;
-    videoInfoStorage.release();
+    cv::VideoCapture cap;
+    cv::Mat Camera_Matrix;
+    cv::Mat Distortion_Coefficients;
 
-	// opening video
-	VideoCapture cap(videoInfo.GetVideoPath());	// open the video file
+    if(!ValidateAndInterpretePrameters(
+        argn,
+        (const char**)argv,
+        firstFrame,
+        videoInfo,
+        cap,
+        Camera_Matrix,
+        Distortion_Coefficients
+        ))
+        return 1;
 
-	if (!cap.isOpened())				// check if we succeeded
-	{
-		help();
-		cout << "The video " << videoInfo.GetVideoPath() << " could not be loaded." << endl;
-		return -4;
-	}
+    namedWindow("Next: ", CV_WINDOW_AUTOSIZE);
 
-    int totalNumFrames = cap.get(CV_CAP_PROP_FRAME_COUNT);
+    namedWindow("Current: ", CV_WINDOW_AUTOSIZE);
     
-    if ( (totalNumFrames <= firstFrame) || (firstFrame < 0) )
-    {
-        cerr << "The number of the first frame should be positive and less than the total number of frames." << endl;
-        help();
-        return -5;
-    }
+    Mat frame;
+    cap.read(frame);
 
-	namedWindow("Next: ", CV_WINDOW_AUTOSIZE);
-
-	namedWindow("Current: ", CV_WINDOW_AUTOSIZE);
-	
-	Mat frame;
-
-	// trying to grab a frame from the video file
-	if (!cap.read(frame))	
-	{
-		help();
-		cout << "A frame could not be loaded" << endl;
-		return -6;
-	}
-
-	// reading calibration data
-	FileStorage Camera_Data;
-	Camera_Data.open(videoInfo.GetCalibDataPath(), FileStorage::READ);
-	
-	if (!Camera_Data.isOpened())
-	{
-		cerr << "Failed to open " << videoInfo.GetCalibDataPath() << endl;
-		help();
-		return -7;
-	}
-
-	Mat Camera_Matrix;
-	Mat Distortion_Coefficients;
-
-	Camera_Data["Camera_Matrix"] >> Camera_Matrix;
-	Camera_Data["Distortion_Coefficients"] >> Distortion_Coefficients;
-
-	Camera_Data.release();
-
-	cout <<"Camera_Matrix="<<endl<< Camera_Matrix << endl
+	cout <<"Camera_Matrix"<<endl<< Camera_Matrix << endl
 		 << "Distortion_Coefficients="<<endl<<Distortion_Coefficients << endl;
 
     //for ../video/../test.mov firstFrame = 78
@@ -197,4 +152,82 @@ int main(int argn, char* argv[])
 	}
 
 	return 0;
+}
+
+
+bool ValidateAndInterpretePrameters(const int argn,
+                                    const char* argv[],
+                                    int& firstFrame,
+                                    VideoInfo& videoInfo,
+                                    cv::VideoCapture& cap,
+                                    cv::Mat& cameraMatrix,
+                                    cv::Mat& distortionCoefficients)
+{
+    // checking command line arguments
+    if (argn < 3)
+    {
+        help();
+        cerr << "Not enough parameters" << endl;
+        return false;
+    }
+
+    firstFrame = atoi(argv[2]);
+    std::string videoInfoXmlPath = argv[1];
+
+    if (!firstFrame)
+    {
+        help();
+        cerr << "Incorrect number of the first frame" << endl;
+        return false;
+    }
+
+    // opening VideoInfo storage
+    FileStorage videoInfoStorage(videoInfoXmlPath, FileStorage::READ);
+    if (!videoInfoStorage.isOpened())
+    {
+        cerr << "Couldn't open " << videoInfoXmlPath << " file." << endl;
+        return false;
+    }
+    videoInfoStorage >> videoInfo;
+    videoInfoStorage.release();
+
+    // opening video
+    cap.open(videoInfo.GetVideoPath()); // open the video file
+    if (!cap.isOpened())                // check if we succeeded
+    {
+        cout << "The video " << videoInfo.GetVideoPath() << " could not be loaded." << endl;
+        return false;
+    }
+
+    int totalNumFrames = cap.get(CV_CAP_PROP_FRAME_COUNT);
+    if ( (totalNumFrames <= firstFrame) || (firstFrame < 0) )
+    {
+        cerr << "The number of the first frame should be positive and less than the total number of frames." << endl;
+        return false;
+    }
+
+    // trying to grab a frame from the video file
+    cv::Mat frame;
+    if (!cap.read(frame))   
+    {
+        help();
+        cerr << "A frame could not be loaded" << endl;
+        return false;
+    }
+    //reseting frame pointer to the start of the film
+    cap.set(CV_CAP_PROP_POS_AVI_RATIO, 0.0);
+
+    // reading calibration data
+    FileStorage cameraData;
+    cameraData.open(videoInfo.GetCalibDataPath(), FileStorage::READ);    
+    if (!cameraData.isOpened())
+    {
+        cerr << "Failed to open " << videoInfo.GetCalibDataPath() << endl;
+        return false;
+    }
+    cameraData["Camera_Matrix"] >> cameraMatrix;
+    cameraData["Distortion_Coefficients"] >> distortionCoefficients;
+    cameraData.release();
+
+    return true;
 }
