@@ -5,12 +5,9 @@
 
 #include "Model.hpp"
 
-Model::Model()
-{ }
-
 Model::Model(const cv::Mat& _T,
              const cv::Mat* _cornerPoints,
-             const int  _pointsPerEdge,
+             const int      _pointsPerEdge,
              const cv::Mat& _cameraMatrix,
              const cv::Mat& _distortionCoefficients,
              const cv::Mat& _rotationVector,
@@ -32,7 +29,7 @@ Model::Model(const cv::Mat& _T,
 
 Model::Model(const cv::Mat& _T,
              const std::vector<cv::Mat> _cornerPoints,
-             const int  _pointsPerEdge,
+             const int      _pointsPerEdge,
              const cv::Mat& _cameraMatrix,
              const cv::Mat& _distortionCoefficients,
              const cv::Mat& _rotationVector,

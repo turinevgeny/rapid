@@ -1,34 +1,30 @@
-#include "RAPIDTracker.hpp"
+#include <cmath>
+#include <iostream>
+
 #include <opencv2/core/core.hpp>
-#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <iostream>
-#include <cmath>
+#include "RAPIDTracker.hpp"
 
-using namespace cv;
-using std::cout;
-using std::endl;
-using std::sqrt;
-
-RAPIDTracker::RAPIDTracker(const std::string _videoFile, const Model &_model)
+RAPIDTracker::RAPIDTracker(const std::string _videoFile, const Model& _model)
 {
 	videoFile = _videoFile;
 	model = _model;
 }
 
-Mat RAPIDTracker::ExtractEdges(const Mat &image) const
+cv::Mat RAPIDTracker::ExtractEdges(const cv::Mat& image) const
 {
-	Mat edges;
+	cv::Mat edges;
 
-	cvtColor(image, edges, CV_BGR2GRAY);
-	GaussianBlur(edges, edges, Size(7,7), 1.5, 1.5);
-	Canny(edges, edges, 20, 100, 3);
+	cv::cvtColor(image, edges, CV_BGR2GRAY);
+	cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
+	cv::Canny(edges, edges, 20, 100, 3);
 
 	return edges;
 }
 
-double RAPIDTracker::GetDisplacement(Point2d controlPoint, Point2d companionPoint, const Mat &edges, Point2d &foundPoint)
+double RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d companionPoint, const cv::Mat& edges, cv::Point2d& foundPoint)
 {
 	double kx=1/model.cameraMatrix.at<double>(0,0);
 	double ky=1/model.cameraMatrix.at<double>(1,1);
@@ -108,12 +104,12 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint, Point2d companionPoin
 	}
 
 	if(diff1==255)
-		foundPoint=Point2d(currX1,currY1);
+		foundPoint = cv::Point2d(currX1, currY1);
 	else
-		foundPoint=Point2d(currX2,currY2);
+		foundPoint = cv::Point2d(currX2, currY2);
 
-//	cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
-//	cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
+//	std::cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
+//	std::cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
 
 	// Displays how many iterations are searched foundPoints
 		//cout<<"num  "<<num<<endl;
@@ -136,38 +132,38 @@ double RAPIDTracker::GetDisplacement(Point2d controlPoint, Point2d companionPoin
 	return -1;
 }
 
-//Model RAPIDTracker::ProcessFrame(const Mat &frame)
-Model RAPIDTracker::ProcessFrame(const Mat &frame)
+//Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
+Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 {
-	Mat result=frame.clone();
+	cv::Mat result=frame.clone();
 
-	std::list<Mat>::iterator controlPointsIter = model.controlPoints.begin();
-	std::list<Mat>::iterator companionPointsIter = model.companionPoints.begin();
+	std::list<cv::Mat>::iterator controlPointsIter = model.controlPoints.begin();
+	std::list<cv::Mat>::iterator companionPointsIter = model.companionPoints.begin();
 
-	Mat edges = ExtractEdges(result);
+	cv::Mat edges = ExtractEdges(result);
 
 //	namedWindow("canny", CV_WINDOW_AUTOSIZE);
 //	imshow("canny",edges);
 
-	Point2d foundPoint;
+	cv::Point2d foundPoint;
 	double l;
 	double tempX,tempY;
 	double sineAlpha,cosineAlpha;
 
-	Mat a,b,c;
-	Mat right = Mat::zeros(6, 1, CV_64F);
-	Mat left  = Mat::zeros(6, 6, CV_64F);
+	cv::Mat a,b,c;
+	cv::Mat right = cv::Mat::zeros(6, 1, CV_64F);
+	cv::Mat left  = cv::Mat::zeros(6, 6, CV_64F);
 
 	while (controlPointsIter != model.controlPoints.end())
 	{
-		Point2d r = model.Project(/*model.T+*/*controlPointsIter);
-		Point2d s = model.Project(/*model.T+*/*companionPointsIter);
+		cv::Point2d r = model.Project(/*model.T+*/*controlPointsIter);
+		cv::Point2d s = model.Project(/*model.T+*/*companionPointsIter);
 
-		//cout << "l:" <<  GetDisplacement(r,s,result,foundPoint) << endl;
+		//std::cout << "l:" <<  GetDisplacement(r,s,result,foundPoint) << endl;
 		l = GetDisplacement(r,s,edges,foundPoint);
 
-		circle(result, foundPoint, 4, Scalar(0,0,255));
-		line(result, foundPoint, r, Scalar(0,255,0), 1, 8);
+		cv::circle(result, foundPoint, 4, cv::Scalar(0,0,255));
+		cv::line(result, foundPoint, r, cv::Scalar(0,255,0), 1, 8);
 
 		tempX=(s.x-r.x);
 		tempY=(s.y-r.y);
@@ -181,8 +177,8 @@ Model RAPIDTracker::ProcessFrame(const Mat &frame)
 		double Pz=(*controlPointsIter).at<double>(0,2);
 		double Tz=model.T.at<double>(0,2);
 
-		a = (Mat_<double>(6,1) <<  -x*Py, x*Px+Pz, -Py, 1, 0,-x);
-		b = (Mat_<double>(6,1) <<  -y*Py-Pz, y*Px,  Px, 0, 1,-y);
+		a = (cv::Mat_<double>(6,1) <<  -x*Py, x*Px+Pz, -Py, 1, 0,-x);
+		b = (cv::Mat_<double>(6,1) <<  -y*Py-Pz, y*Px,  Px, 0, 1,-y);
 		a/=Tz+Pz;
 		b/=Tz+Pz;
 		c=a*cosineAlpha-b*sineAlpha;
@@ -194,15 +190,15 @@ Model RAPIDTracker::ProcessFrame(const Mat &frame)
 		controlPointsIter++;
 		companionPointsIter++;
 	}
-	Mat solution;
-	solve(left,right,solution);
+	cv::Mat solution;
+	cv::solve(left,right,solution);
 
-	//cout << endl << "right" << right << endl << "left"<< left*solution<<endl;
+	//std::cout << endl << "right" << right << endl << "left"<< left*solution<<endl;
 
 	model.updatePose(solution);
 
-	namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);
-	imshow("Current: foundPoints", result);
+	cv::namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);
+	cv::imshow("Current: foundPoints", result);
 
  	return model;
 }

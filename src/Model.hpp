@@ -8,7 +8,7 @@
 class Model
 {
 public:
-	Model();
+	Model() {}
 	Model(const cv::Mat& T,
           const cv::Mat* cornerPoints,
           const int      pointsPerEdge,
@@ -23,7 +23,6 @@ public:
           const cv::Mat& distortionCoefficients,
           const cv::Mat& rotationVector,
           const cv::Mat& translateVector);
-	//Model(const Model& model);
 	~Model();
 	cv::Mat         Outline(const cv::Mat& source);			// projects the model onto the image
 private:
