@@ -1,13 +1,8 @@
 #include <iostream>
-using namespace std;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
-using namespace cv;
 
 // Model traits and handling methods
 #include "Model.hpp"
@@ -15,6 +10,10 @@ using namespace cv;
 #include "RAPIDTracker.hpp"
 // VideoInfo struct
 #include "VideoInfo.hpp"
+
+using std::cout;
+using std::cerr;
+using std::endl;
 
 void help()
 {
@@ -40,6 +39,13 @@ bool ValidateAndInterpretePrameters(const int argn,
                                     cv::Mat& cameraMatrix,
                                     cv::Mat& distortionCoefficients);
 
+// false if the process has failed
+bool GetRotationAndTranslationVector(const cv::Mat& view,
+                                     const cv::Mat& cameraMatrix,
+                                     const cv::Mat& distortionCoefficients,
+                                     cv::Mat& rVector,
+                                     cv::Mat& tVector);
+
 int main(int argn, char* argv[])
 {
     int firstFrame;
@@ -59,101 +65,115 @@ int main(int argn, char* argv[])
         ))
         return 1;
 
-    namedWindow("Next: ", CV_WINDOW_AUTOSIZE);
-
-    namedWindow("Current: ", CV_WINDOW_AUTOSIZE);
+    cv::namedWindow("Next", CV_WINDOW_AUTOSIZE);
+    cv::namedWindow("Current", CV_WINDOW_AUTOSIZE);
     
-    Mat frame;
+    cv::Mat frame;
     cap.read(frame);
 
-	cout <<"Camera_Matrix"<<endl<< Camera_Matrix << endl
-		 << "Distortion_Coefficients="<<endl<<Distortion_Coefficients << endl;
+	cout << "Camera_Matrix" << endl << Camera_Matrix << endl
+		 << "Distortion_Coefficients=" << endl << Distortion_Coefficients << endl;
 
     //for ../video/../test.mov firstFrame = 78
-	for(int i=0; i<firstFrame; i++)
+	for(int i = 0; i < firstFrame; i++)
 		cap.read(frame);
 
-    vector<Point2f> foundBoardCorners;
-    vector<Point3f> boardPoints;
-    float squareSize = 17.7;
-    Size boardSize(4, 11);
-    Mat view = frame;
-    Mat rvec(3,1,CV_64F), tvec(3,1,CV_64F);
-    bool found;
-
-    // X, Y, Z -axis offset from the center of the reference circle
-
-    float offsetX = -30;
-    float offsetY = 0;   
-    float offsetZ = -177 - 7 + 145;
-
-    //calcBoardCornerPositions circles
-    for( int i = 0; i < boardSize.height; i++ )
-        for( int j = 0; j < boardSize.width; j++ )
-            boardPoints.push_back(Point3f(float((2*j + i % 2)*(-squareSize) + offsetX), offsetY, float(i*squareSize) + offsetZ));
-
-    cout<<"boardPoints"<<endl<<boardPoints<<endl;
-    found = findCirclesGrid( view, boardSize, foundBoardCorners, 2);
-
-    if (found) {
-        //drawChessboardCorners( view, boardSize, Mat(foundBoardCorners), found );
-
-        //draw reference circle
-        circle(view, foundBoardCorners[40], 2, Scalar(0,255,0), 2); //green
-
-        cout<<"found circles Grid!"<<endl;
-        solvePnP(Mat(boardPoints), Mat(foundBoardCorners), Camera_Matrix,
-                     Distortion_Coefficients, rvec, tvec, false);
-        cout<<"Rotate vector"<<endl<<rvec<<endl<<"Translate vector="<<endl<<tvec<<endl;
-    }
-    else
+    cv::Mat rVec, tVec;
+    if (!GetRotationAndTranslationVector(frame, Camera_Matrix, Distortion_Coefficients, rVec, tVec))
     {
-        cerr<<endl<<"Can't find calibration pattern."<< endl
-            <<" Troubleshooting: to change numberOfFirstFrame ("<< firstFrame<<") "<<endl
-            <<"or input video("<<videoInfo.GetCalibDataPath()<<")"<<endl;
+        cerr << endl << "Can't find calibration pattern."<< endl
+             << " Troubleshooting: change numberOfFirstFrame or the input video" << endl;
         help();
-        return -4;
+        return 1;
     }
 
-    Mat Box3DPoint = Mat::zeros(3, 1, CV_64F);
-    
-    Mat expProjectedPoint = Mat::zeros(3, 1, CV_64F);
-    projectPoints( Box3DPoint.t(), rvec, tvec, Camera_Matrix, Distortion_Coefficients, expProjectedPoint);
-   
-    Point2d center(expProjectedPoint.at<double>(0,0), expProjectedPoint.at<double>(0,1));
-
-    //draw block's reference point 
-    circle(view, center, 2, Scalar(0,0,255),2); 
-    imshow("drawChessboardCorners: ", view);
-
-    //How to get the point (Box3DPoint) in camera coordinates.
-    Mat rmat(3, 3, CV_64F);
-    Rodrigues(rvec, rmat);
-    cout<<"Rotate matrix"<<endl<<rmat<<endl;
-    cout<<"rmat * Box3DPoint"<<endl<< rmat * Box3DPoint <<endl;
-    Box3DPoint =  rmat * Box3DPoint + tvec;
-
-    cout<<"Box3DPoint"<<endl<<Box3DPoint<<endl; 
-    // Box3DPoint = (0,0,0) in box coordinates, so it's equal tvec in camera coordinates
-
-    Model model(tvec.t(), videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rvec, tvec);
+    Model model(tVec.t(), videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec);
     RAPIDTracker tracker("", model);
 
 	while (cap.read(frame))
 	{
-		Mat prev;
-		prev = model.Outline(frame);
-		imshow("Current: ", prev);
+		cv::Mat prev = model.Outline(frame);
+		cv::imshow("Current", prev);
 		Model updatedModel = tracker.ProcessFrame(frame);
 		frame = updatedModel.Outline(frame);
-		imshow("Next: ", frame);
+		cv::imshow("Next", frame);
 
-		waitKey();
+		cv::waitKey();
 	}
 
 	return 0;
 }
 
+bool GetRotationAndTranslationVector(const cv::Mat& circlesImage,
+                                     const cv::Mat& Camera_Matrix,
+                                     const cv::Mat& Distortion_Coefficients,
+                                     cv::Mat& rVector,
+                                     cv::Mat& tVector)
+{
+    std::vector<cv::Point2f> foundBoardCorners;
+    std::vector<cv::Point3f> boardPoints;
+    float squareSize = 17.7;
+    cv::Size boardSize(4, 11);
+    cv::Mat rvec(3, 1, CV_64F), tvec(3, 1, CV_64F);
+    bool found;
+
+    // X, Y, Z - axis offset from the center of the reference circle
+
+    float offsetX = -30;
+    float offsetY = 0;
+    float offsetZ = -177 - 7 + 145;
+
+    //calcBoardCornerPositions circles
+    for( int i = 0; i < boardSize.height; i++ )
+        for( int j = 0; j < boardSize.width; j++ )
+            boardPoints.push_back(cv::Point3f(float((2*j + i % 2)*(-squareSize) + offsetX), offsetY, float(i*squareSize) + offsetZ));
+
+    cout << "boardPoints" << endl << boardPoints << endl;
+    found = cv::findCirclesGrid(circlesImage, boardSize, foundBoardCorners, 2);
+
+    cv::Mat view = circlesImage.clone();
+
+    if (found) 
+    {
+        //drawChessboardCorners( view, boardSize, Mat(foundBoardCorners), found );
+
+        //draw reference circle
+        cv::circle(view, foundBoardCorners[40], 2, cv::Scalar(0,255,0), 2); //green
+
+        cout << "found circles Grid!" << endl;
+        cv::solvePnP(cv::Mat(boardPoints), cv::Mat(foundBoardCorners), Camera_Matrix,
+                     Distortion_Coefficients, rvec, tvec, false);
+        cout << "Rotate vector" << endl << rvec << endl << "Translate vector=" << endl << tvec << endl;
+    }
+    else
+        return false;
+
+    cv::Mat Box3DPoint = cv::Mat::zeros(3, 1, CV_64F);
+    
+    cv::Mat expProjectedPoint = cv::Mat::zeros(3, 1, CV_64F);
+    cv::projectPoints( Box3DPoint.t(), rvec, tvec, Camera_Matrix, Distortion_Coefficients, expProjectedPoint);
+   
+    cv::Point2d center(expProjectedPoint.at<double>(0,0), expProjectedPoint.at<double>(0,1));
+
+    //draw block's reference point
+    cv::circle(view, center, 2, cv::Scalar(0,0,255), 2);
+    cv::namedWindow("drawChessboardCorners", CV_WINDOW_AUTOSIZE);
+    cv::imshow("drawChessboardCorners", view);
+
+    //How to get the point (Box3DPoint) in camera coordinates.
+    cv::Mat rmat(3, 3, CV_64F);
+    cv::Rodrigues(rvec, rmat);
+    cout << "Rotate matrix" << endl << rmat << endl;
+    cout << "rmat * Box3DPoint" << endl << rmat * Box3DPoint << endl;
+    Box3DPoint =  rmat * Box3DPoint + tvec;
+
+    cout << "Box3DPoint" << endl << Box3DPoint << endl; 
+    // Box3DPoint = (0,0,0) in box coordinates, so it's equal tvec in camera coordinates
+
+    tVector = tvec;
+    rVector = rvec;
+    return true;
+}
 
 bool ValidateAndInterpretePrameters(const int argn,
                                     const char* argv[],
@@ -163,7 +183,7 @@ bool ValidateAndInterpretePrameters(const int argn,
                                     cv::Mat& cameraMatrix,
                                     cv::Mat& distortionCoefficients)
 {
-    // checking command line arguments
+    // checking number of the command line arguments
     if (argn < 3)
     {
         help();
@@ -182,7 +202,7 @@ bool ValidateAndInterpretePrameters(const int argn,
     }
 
     // opening VideoInfo storage
-    FileStorage videoInfoStorage(videoInfoXmlPath, FileStorage::READ);
+    cv::FileStorage videoInfoStorage(videoInfoXmlPath, cv::FileStorage::READ);
     if (!videoInfoStorage.isOpened())
     {
         cerr << "Couldn't open " << videoInfoXmlPath << " file." << endl;
@@ -214,12 +234,12 @@ bool ValidateAndInterpretePrameters(const int argn,
         cerr << "A frame could not be loaded" << endl;
         return false;
     }
-    //reseting frame pointer to the start of the film
+    // moving frame pointer to the start of the film
     cap.set(CV_CAP_PROP_POS_AVI_RATIO, 0.0);
 
     // reading calibration data
-    FileStorage cameraData;
-    cameraData.open(videoInfo.GetCalibDataPath(), FileStorage::READ);    
+    cv::FileStorage cameraData;
+    cameraData.open(videoInfo.GetCalibDataPath(), cv::FileStorage::READ);    
     if (!cameraData.isOpened())
     {
         cerr << "Failed to open " << videoInfo.GetCalibDataPath() << endl;
