@@ -1,24 +1,20 @@
-#include "Model.hpp"
+#include <iostream>
+
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
-#include <iostream>
-using namespace cv;
-using std::cout;
-using std::endl;
+#include "Model.hpp"
 
 Model::Model()
-{
-	
-}
+{ }
 
-Model::Model(const Mat &_T, 
-             const Mat *_cornerPoints, 
-             int        _pointsPerEdge, 
-             const Mat &_cameraMatrix, 
-             const Mat &_distortionCoefficients,
-             const Mat &_rotationVector,
-             const Mat &_translateVector)
+Model::Model(const cv::Mat& _T,
+             const cv::Mat* _cornerPoints,
+             const int  _pointsPerEdge,
+             const cv::Mat& _cameraMatrix,
+             const cv::Mat& _distortionCoefficients,
+             const cv::Mat& _rotationVector,
+             const cv::Mat& _translateVector)
 {
 	T = _T.clone();
 
@@ -34,13 +30,13 @@ Model::Model(const Mat &_T,
 	SetControlPoints();
 }
 
-Model::Model(const Mat &_T, 
-             const std::vector<Mat> _cornerPoints, 
-             int        _pointsPerEdge, 
-             const Mat &_cameraMatrix, 
-             const Mat &_distortionCoefficients,
-             const Mat &_rotationVector,
-             const Mat &_translateVector)
+Model::Model(const cv::Mat& _T,
+             const std::vector<cv::Mat> _cornerPoints,
+             const int  _pointsPerEdge,
+             const cv::Mat& _cameraMatrix,
+             const cv::Mat& _distortionCoefficients,
+             const cv::Mat& _rotationVector,
+             const cv::Mat& _translateVector)
 {
 	T = _T.clone();
 
@@ -58,21 +54,21 @@ Model::Model(const Mat &_T,
 
 Model::~Model()
 {
-	std::list<Mat>::iterator controlPointsIter = controlPoints.begin();
+	std::list<cv::Mat>::iterator controlPointsIter = controlPoints.begin();
 	while (controlPointsIter != controlPoints.end())
 	{
 		controlPointsIter->release();
 		controlPointsIter++;
 	}
 
-	std::list<Mat>::iterator companionPointsIter = companionPoints.begin();
+	std::list<cv::Mat>::iterator companionPointsIter = companionPoints.begin();
 	while (companionPointsIter != companionPoints.end())
 	{
 		companionPointsIter->release();
 		companionPointsIter++;
 	}
 
-	std::vector<Mat>::iterator cornerPointsIter = cornerPoints.begin();
+	std::vector<cv::Mat>::iterator cornerPointsIter = cornerPoints.begin();
 	while (cornerPointsIter != cornerPoints.end())
 	{
 		cornerPointsIter->release();
@@ -81,10 +77,10 @@ Model::~Model()
 }
 
 // Projecting points manually. Parameters selection based on luck and attentiveness.
-Point2d Model::Project(const Mat& _3DPoint, double scaleCoeff, const Point2d &translateVector) const
+cv::Point2d Model::Project(const cv::Mat& _3DPoint, double scaleCoeff, const cv::Point2d &translateVector) const
 {
 	// projecting
-	Point2d point(_3DPoint.at<double>(0,0) / (_3DPoint.at<double>(0,2)),
+	cv::Point2d point(_3DPoint.at<double>(0,0) / (_3DPoint.at<double>(0,2)),
 			      _3DPoint.at<double>(0,1) / (_3DPoint.at<double>(0,2)));
 
 	// scaling
@@ -97,11 +93,11 @@ Point2d Model::Project(const Mat& _3DPoint, double scaleCoeff, const Point2d &tr
 }
 
 // Manual projecting based on camera calibrating data.
-Point2d Model::ManualProject(const Mat& _3DPoint) const
+cv::Point2d Model::ManualProject(const cv::Mat& _3DPoint) const
 {
-    Mat Box3DPoint = _3DPoint.clone();
-    Mat rotationMatrix;
-    Rodrigues(rotationVector, rotationMatrix);
+    cv::Mat Box3DPoint = _3DPoint.clone();
+    cv::Mat rotationMatrix;
+    cv::Rodrigues(rotationVector, rotationMatrix);
 
     Box3DPoint = rotationMatrix * Box3DPoint.t() + translateVector;
 
@@ -116,53 +112,53 @@ Point2d Model::ManualProject(const Mat& _3DPoint) const
 	double u = x1*cameraMatrix.at<double>(0,0) + cameraMatrix.at<double>(0,2);
 	double v = y1*cameraMatrix.at<double>(1,1) + cameraMatrix.at<double>(1,2);
 
-	return Point2d(u,v);
+	return cv::Point2d(u,v);
 }
 
 
 // Projecting using OpenCV function
-Point2d Model::Project(const Mat& _3DPoint) const
+cv::Point2d Model::Project(const cv::Mat& _3DPoint) const
 {
-	std::vector<Point2d> projectedPoints;
-	projectPoints(_3DPoint, rotationVector, translateVector, cameraMatrix, distortionCoefficients, projectedPoints);
+	std::vector<cv::Point2d> projectedPoints;
+	cv::projectPoints(_3DPoint, rotationVector, translateVector, cameraMatrix, distortionCoefficients, projectedPoints);
     return projectedPoints[0];
 }
 
-Mat Model::Outline(const Mat &source)
+cv::Mat Model::Outline(const cv::Mat& source)
 {
-	Mat result = source.clone();
+	cv::Mat result = source.clone();
 
-	Scalar whiteColor = Scalar(Scalar::all(255));
+	cv::Scalar whiteColor = cv::Scalar(cv::Scalar::all(255));
 
 	// drawing edges
-	line(result, Project(cornerPoints[0]), Project(cornerPoints[1]), whiteColor, 1, 8);
-	line(result, Project(cornerPoints[1]), Project(cornerPoints[2]), whiteColor, 1, 8);
- 	line(result, Project(cornerPoints[2]), Project(cornerPoints[3]), whiteColor, 1, 8);
-	line(result, Project(cornerPoints[0]), Project(cornerPoints[4]), whiteColor, 1, 8);
+	cv::line(result, Project(cornerPoints[0]), Project(cornerPoints[1]), whiteColor, 1, 8);
+	cv::line(result, Project(cornerPoints[1]), Project(cornerPoints[2]), whiteColor, 1, 8);
+ 	cv::line(result, Project(cornerPoints[2]), Project(cornerPoints[3]), whiteColor, 1, 8);
+	cv::line(result, Project(cornerPoints[0]), Project(cornerPoints[4]), whiteColor, 1, 8);
  
- 	line(result, Project(cornerPoints[4]), Project(cornerPoints[5]), whiteColor, 1, 8);
- 	line(result, Project(cornerPoints[5]), Project(cornerPoints[6]), whiteColor, 1, 8);
-	line(result, Project(cornerPoints[6]), Project(cornerPoints[7]), whiteColor, 1, 8);
-	line(result, Project(cornerPoints[7]), Project(cornerPoints[4]), whiteColor, 1, 8);
+ 	cv::line(result, Project(cornerPoints[4]), Project(cornerPoints[5]), whiteColor, 1, 8);
+ 	cv::line(result, Project(cornerPoints[5]), Project(cornerPoints[6]), whiteColor, 1, 8);
+	cv::line(result, Project(cornerPoints[6]), Project(cornerPoints[7]), whiteColor, 1, 8);
+	cv::line(result, Project(cornerPoints[7]), Project(cornerPoints[4]), whiteColor, 1, 8);
 
- 	line(result, Project(cornerPoints[0]), Project(cornerPoints[3]), whiteColor, 1, 8);
-	line(result, Project(cornerPoints[1]), Project(cornerPoints[5]), whiteColor, 1, 8);
-	line(result, Project(cornerPoints[2]), Project(cornerPoints[6]), whiteColor, 1, 8);
-	line(result, Project(cornerPoints[3]), Project(cornerPoints[7]), whiteColor, 1, 8);
+ 	cv::line(result, Project(cornerPoints[0]), Project(cornerPoints[3]), whiteColor, 1, 8);
+	cv::line(result, Project(cornerPoints[1]), Project(cornerPoints[5]), whiteColor, 1, 8);
+	cv::line(result, Project(cornerPoints[2]), Project(cornerPoints[6]), whiteColor, 1, 8);
+	cv::line(result, Project(cornerPoints[3]), Project(cornerPoints[7]), whiteColor, 1, 8);
 
 	// drawing cotrol points
-	std::list<Mat>::iterator controlPointsIter = controlPoints.begin();
+	std::list<cv::Mat>::iterator controlPointsIter = controlPoints.begin();
 	while (controlPointsIter != controlPoints.end())
 	{
-		circle(result, Project(*controlPointsIter), 4, Scalar(Scalar::all(255)));
+		cv::circle(result, Project(*controlPointsIter), 4, cv::Scalar(cv::Scalar::all(255)));
 		controlPointsIter++;
 	}
 
 	// drawing companion points
-// 	std::list<Mat>::iterator companionPointsIter = companionPoints.begin();
+// 	std::list<cv::Mat>::iterator companionPointsIter = companionPoints.begin();
 // 	while (companionPointsIter != companionPoints.end())
 // 	{
-// 		circle(result, Project(T+*companionPointsIter), 5, Scalar(0,255,0) );
+// 		cv::circle(result, Project(T+*companionPointsIter), 5, Scalar(0,255,0) );
 // 		companionPointsIter++;
 // 	}
 
@@ -176,9 +172,9 @@ void Model::AddControlPointsFromTheEdge(int i, int j)
 
 	const double companionPointsOffset = 0.3;
 
-	const Mat direction = cornerPoints[i] - cornerPoints[j];
+	const cv::Mat direction = cornerPoints[i] - cornerPoints[j];
 
-    Mat p, s;
+    cv::Mat p, s;
 
     p = cornerPoints[i] - direction*offset;
     controlPoints.push_back(p);
@@ -229,45 +225,45 @@ void Model::SetControlPoints()
 	AddControlPointsFromTheEdge(3, 7);
 }
 
-void Model::RotateAndTranslate(const Mat &rotationVector, const Mat &translateVector)
+void Model::RotateAndTranslate(const cv::Mat &rotationVector, const cv::Mat &translateVector)
 {
 
 }
 
-void Model::updatePose(const Mat &solution)
+void Model::updatePose(const cv::Mat &solution)
 {
-	Mat angle,distanse;
-	angle=Mat(solution,Range(0,3),Range(0,1));
-	distanse=Mat(solution,Range(3,6),Range(0,1));
+	cv::Mat angle,distanse;
+	angle=cv::Mat(solution,cv::Range(0,3),cv::Range(0,1));
+	distanse=cv::Mat(solution,cv::Range(3,6),cv::Range(0,1));
 
-//	cout<<"angle= "<<endl<<angle<<endl;
-//	cout<<"distanse= "<<endl<<distanse<<endl;
-//	cout<<"T= "<<endl<<T<<endl;
+//	std::cout<<"angle= "<<endl<<angle<<endl;
+//	std::cout<<"distanse= "<<endl<<distanse<<endl;
+//	std::cout<<"T= "<<endl<<T<<endl;
 
 	T+=distanse.t();
-//	cout<<"new T= "<<endl<<T<<endl;
+//	std::cout<<"new T= "<<endl<<T<<endl;
 
-//		Mat test = (Mat_<double>(3,1) <<  0,0,1);
-//		Mat tesl = (Mat_<double>(3,1) <<  0,1,0);
-//		cout<<"crossProduct!!"<<test.cross(tesl)<<endl;
+//		cv::Mat test = (Mat_<double>(3,1) <<  0,0,1);
+//		cv::Mat tesl = (Mat_<double>(3,1) <<  0,1,0);
+//		std::cout<<"crossProduct!!"<<test.cross(tesl)<<endl;
 
-	std::list<Mat>::iterator controlPointsIter = controlPoints.begin();
+	std::list<cv::Mat>::iterator controlPointsIter = controlPoints.begin();
 	while (controlPointsIter != controlPoints.end())
 	{
-		//cout<<"Point= "<<(*controlPointsIter)<<endl;
+		//std::cout<<"Point= "<<(*controlPointsIter)<<endl;
 		(*controlPointsIter)+=angle.t().cross(*controlPointsIter) + distanse.t();
-		//cout<<"newPoint= "<<(*controlPointsIter)<<endl;
+		//std::cout<<"newPoint= "<<(*controlPointsIter)<<endl;
 		controlPointsIter++;
 	}
 
-	std::list<Mat>::iterator companionPointsIter = companionPoints.begin();
+	std::list<cv::Mat>::iterator companionPointsIter = companionPoints.begin();
 	while (companionPointsIter != companionPoints.end())
 	{
 		(*companionPointsIter)+=angle.t().cross(*companionPointsIter) + distanse.t();
 		companionPointsIter++;
 	}
 
-	std::vector<Mat>::iterator cornerPointsIter = cornerPoints.begin();
+	std::vector<cv::Mat>::iterator cornerPointsIter = cornerPoints.begin();
 	while (cornerPointsIter != cornerPoints.end())
 	{
 		(*cornerPointsIter)+=angle.t().cross(*cornerPointsIter) + distanse.t();
