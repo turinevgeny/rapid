@@ -15,6 +15,7 @@ public:
 	virtual std::string GetVideoPath() { return videoPath; }
 	virtual std::string GetCalibDataPath() { return calibDataPath; }
 
+	// getters
 	int GetNumberOfCorners() const { return numberOfCorners; }
 	cv::Mat GetModelCoordsOrigin() const { return T; }
 
@@ -23,9 +24,9 @@ public:
 	void MockUp();
 
 	//Serialization for the class
-	friend cv::FileStorage &operator<<(cv::FileStorage &out, const VideoInfo &c);
+	friend cv::FileStorage& operator<<(cv::FileStorage& out, const VideoInfo& c);
 	//Deserialization for the class
-	friend cv::FileStorage &operator>>(cv::FileStorage &in, VideoInfo &c);
+	friend cv::FileStorage& operator>>(cv::FileStorage& in, VideoInfo& c);
 
 	virtual ~VideoInfo();
 private:
