@@ -56,31 +56,39 @@ Model GetHardcodedModel()
 class FakeMovie
 {
 public:
-	FakeMovie() {}
 	~FakeMovie() {}
-	// filmHistory is a list of 6 vectors (angles|translation)
+	// filmHistory is a list of a vectors-solutions (angles|translation)
 	FakeMovie(std::list<cv::Mat> filmHistory, Model initialModelState, int height, int width)
 	{
-	    cv::Mat initialFrame = initialModelState.Outline(GetBlackFrame(height, width));
-	    list.push_back(initialFrame);
-	    Model currentModelState = initialModelState;
+		cv::Mat initialFrame = initialModelState.Outline(GetBlackFrame(height, width));
+		movie.push_back(initialFrame);
+		Model currentModelState = initialModelState;
 
 		std::list<cv::Mat>::iterator historyIterator = filmHistory.begin();
 		while (historyIterator != filmHistory.end())
 		{
 			currentModelState.updatePose(*historyIterator);
-			list.push_back(currentModelState.Outline(GetBlackFrame(height, width)));
+			movie.push_back(currentModelState.Outline(GetBlackFrame(height, width)));
+			historyIterator++;
 		}
-	}
-	cv::Mat ReadNextFrame()
-	{
 
+		movieIterator = movie.begin();
+	}
+	// false when there's no next frame
+	bool ReadNextFrame(cv::Mat& destination)
+	{
+		destination = *movieIterator;
+		movieIterator++;
+		if (movieIterator != movie.end())
+			return true;
+		else
+			return false;
 	}
 	void RewindToTheStart()
 	{
-
+		movieIterator = movie.begin();
 	}
-	void PlayFakeMovie(std::list<cv::Mat> movie)
+	void PlayFakeMovie()
 	{
 		const std::string fakeMovieWindow = "Fake movie";
 
@@ -91,15 +99,17 @@ public:
 		{
 			cv::imshow(fakeMovieWindow, *movieIterator);
 			cv::waitKey();
+			movieIterator++;
 		}
 	}
 private:
-	std::list<cv::Mat> list;
+	std::list<cv::Mat> movie;
+	std::list<cv::Mat>::iterator movieIterator;
 private:
 	cv::Mat GetBlackFrame(int height, int width)
 	{
 		return cv::Mat::zeros(height, width, CV_8UC3);
-	}	
+	}
 };
 
 int main(int argn, char* argv[])
@@ -110,6 +120,11 @@ int main(int argn, char* argv[])
 
 	const int VideoHeight = 480;
 	const int VideoWidth = 640;
+
+	cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, 0.0, 0.0, 0.0, 0.0, -100.1);
+
+	Model model = GetHardcodedModel();
+	//model.updatePose(firstMovement);
 
 	return 0;
 }
