@@ -25,6 +25,8 @@ public:
           const cv::Mat& translateVector);
 	~Model();
 	cv::Mat         Outline(const cv::Mat& source);			// projects the model onto the image
+	void			updatePose(const cv::Mat& rotVector, const cv::Mat& transVector); // 3d vectors
+	void			updatePose(const cv::Mat& solution);	// solution = rotation angles concat translation distances
 private:
 	cv::Mat					T;					// model coordinate system origin in camera coords
 	std::vector<cv::Mat>	cornerPoints;		// corner points in model coords
@@ -47,7 +49,6 @@ private:
     cv::Point2d     ManualProject(const cv::Mat& Point3d) const;
 	void			SetControlPoints();						// fills control points list with points evenly located on the edges
 	void            AddControlPointsFromTheEdge(int i, int j);
-	void			updatePose(const cv::Mat& solution);
 
 	friend class RAPIDTracker;
 };

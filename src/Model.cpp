@@ -24,6 +24,7 @@ Model::Model(const cv::Mat& _T,
 	pointsPerEdge   = _pointsPerEdge;
     rotationVector  = _rotationVector;
     translateVector = _translateVector;
+
 	SetControlPoints();
 }
 
@@ -46,6 +47,7 @@ Model::Model(const cv::Mat& _T,
 	pointsPerEdge   = _pointsPerEdge;
     rotationVector  = _rotationVector;
     translateVector = _translateVector;
+
 	SetControlPoints();
 }
 
@@ -229,15 +231,19 @@ void Model::RotateAndTranslate(const cv::Mat &rotationVector, const cv::Mat &tra
 
 void Model::updatePose(const cv::Mat &solution)
 {
-	cv::Mat angle,distanse;
-	angle=cv::Mat(solution,cv::Range(0,3),cv::Range(0,1));
-	distanse=cv::Mat(solution,cv::Range(3,6),cv::Range(0,1));
+	cv::Mat angle = cv::Mat(solution, cv::Range(0,3), cv::Range(0,1));
+	cv::Mat distance = cv::Mat(solution, cv::Range(3,6), cv::Range(0,1));
 
+	updatePose(angle, distance);
+}
+
+void Model::updatePose(const cv::Mat& angle, const cv::Mat& distance)
+{
 //	std::cout<<"angle= "<<endl<<angle<<endl;
-//	std::cout<<"distanse= "<<endl<<distanse<<endl;
+//	std::cout<<"distance= "<<endl<<distance<<endl;
 //	std::cout<<"T= "<<endl<<T<<endl;
 
-	T+=distanse.t();
+	T+=distance.t();
 //	std::cout<<"new T= "<<endl<<T<<endl;
 
 //		cv::Mat test = (Mat_<double>(3,1) <<  0,0,1);
@@ -248,7 +254,7 @@ void Model::updatePose(const cv::Mat &solution)
 	while (controlPointsIter != controlPoints.end())
 	{
 		//std::cout<<"Point= "<<(*controlPointsIter)<<endl;
-		(*controlPointsIter)+=angle.t().cross(*controlPointsIter) + distanse.t();
+		(*controlPointsIter)+=angle.t().cross(*controlPointsIter) + distance.t();
 		//std::cout<<"newPoint= "<<(*controlPointsIter)<<endl;
 		controlPointsIter++;
 	}
@@ -256,15 +262,14 @@ void Model::updatePose(const cv::Mat &solution)
 	std::list<cv::Mat>::iterator companionPointsIter = companionPoints.begin();
 	while (companionPointsIter != companionPoints.end())
 	{
-		(*companionPointsIter)+=angle.t().cross(*companionPointsIter) + distanse.t();
+		(*companionPointsIter)+=angle.t().cross(*companionPointsIter) + distance.t();
 		companionPointsIter++;
 	}
 
 	std::vector<cv::Mat>::iterator cornerPointsIter = cornerPoints.begin();
 	while (cornerPointsIter != cornerPoints.end())
 	{
-		(*cornerPointsIter)+=angle.t().cross(*cornerPointsIter) + distanse.t();
+		(*cornerPointsIter)+=angle.t().cross(*cornerPointsIter) + distance.t();
 		cornerPointsIter++;
 	}
-
 }
