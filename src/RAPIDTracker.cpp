@@ -193,7 +193,7 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 	cv::Mat solution;
 	cv::solve(left,right,solution);
 
-	//std::cout << endl << "right" << right << endl << "left"<< left*solution<<endl;
+	//std::cout << std::endl << "right " << right << std::endl << "; left "<< left*solution << std::endl;
 
 	model.updatePose(solution);
 

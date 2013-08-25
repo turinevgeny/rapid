@@ -64,24 +64,16 @@ int main(int argn, char* argv[])
         Distortion_Coefficients
         ))
         return 1;
-
-    cv::namedWindow("Next", CV_WINDOW_AUTOSIZE);
-    cv::namedWindow("Current", CV_WINDOW_AUTOSIZE);
     
     cv::Mat frame;
-    cap.read(frame);
-
-	cout << "Camera_Matrix" << endl << Camera_Matrix << endl
-		 << "Distortion_Coefficients=" << endl << Distortion_Coefficients << endl;
-
     //for ../video/../test.mov firstFrame = 78
-	for(int i = 0; i < firstFrame; i++)
-		cap.read(frame);
+    for(int i = 0; i < firstFrame; i++)
+        cap.read(frame);
 
     cv::Mat rVec, tVec;
     if (!GetRotationAndTranslationVector(frame, Camera_Matrix, Distortion_Coefficients, rVec, tVec))
     {
-        cerr << endl << "Can't find calibration pattern."<< endl
+        cerr << endl << "Can't find the calibration pattern."<< endl
              << " Troubleshooting: change numberOfFirstFrame or the input video" << endl;
         help();
         return 1;
@@ -90,13 +82,19 @@ int main(int argn, char* argv[])
     Model model(tVec.t(), videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec);
     RAPIDTracker tracker("", model);
 
+    const std::string nextWindowName = "Next";
+    const std::string currentWindowName = "Current";
+
+    cv::namedWindow(nextWindowName, CV_WINDOW_AUTOSIZE);
+    cv::namedWindow(currentWindowName, CV_WINDOW_AUTOSIZE);
+
 	while (cap.read(frame))
 	{
 		cv::Mat prev = model.Outline(frame);
-		cv::imshow("Current", prev);
+		cv::imshow(currentWindowName, prev);
 		Model updatedModel = tracker.ProcessFrame(frame);
 		frame = updatedModel.Outline(frame);
-		cv::imshow("Next", frame);
+		cv::imshow(nextWindowName, frame);
 
 		cv::waitKey();
 	}

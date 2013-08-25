@@ -6,7 +6,7 @@
 #include "Model.hpp"
 
 // Describes possible search directions among a row of pixels
-enum Direction{HORIZONTAL, VERTICAL, UPWARD_DIAGONAL, DOWNWARD_DIAGONAL};
+enum Direction {HORIZONTAL, VERTICAL, UPWARD_DIAGONAL, DOWNWARD_DIAGONAL};
 
 class RAPIDTracker
 {

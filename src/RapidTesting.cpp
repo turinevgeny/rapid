@@ -57,19 +57,19 @@ class FakeMovie
 {
 public:
 	~FakeMovie() {}
-	// filmHistory is a list of a vectors-solutions (angles|translation)
-	FakeMovie(std::list<cv::Mat> filmHistory, Model initialModelState, int height, int width)
+	// filmScenario is a list of a vectors-solutions (angles|translation)
+	FakeMovie(std::list<cv::Mat> filmScenario, Model initialModelState, int height, int width)
 	{
 		cv::Mat initialFrame = initialModelState.Outline(GetBlackFrame(height, width));
 		movie.push_back(initialFrame);
 		Model currentModelState = initialModelState;
 
-		std::list<cv::Mat>::iterator historyIterator = filmHistory.begin();
-		while (historyIterator != filmHistory.end())
+		std::list<cv::Mat>::iterator scenarioIterator = filmScenario.begin();
+		while (scenarioIterator != filmScenario.end())
 		{
-			currentModelState.updatePose(*historyIterator);
+			currentModelState.updatePose(*scenarioIterator);
 			movie.push_back(currentModelState.Outline(GetBlackFrame(height, width)));
-			historyIterator++;
+			scenarioIterator++;
 		}
 
 		movieIterator = movie.begin();
@@ -115,16 +115,21 @@ private:
 int main(int argn, char* argv[])
 {
 	/// Windows names
-	const std::string currentWindow = "Current";
-	const std::string nextWindow = "Next";
+	const std::string currentWindowName = "Current";
+	const std::string nextWindowName = "Next";
 
 	const int VideoHeight = 480;
 	const int VideoWidth = 640;
 
-	cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, 0.0, 0.0, 0.0, 0.0, -100.1);
+	cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, 0.0, 0.0, 0.0, 0.0, -100.0);
 
 	Model model = GetHardcodedModel();
 	//model.updatePose(firstMovement);
+
+	std::list<cv::Mat> fakeMovieScenario;
+	fakeMovieScenario.push_back(firstMovement);
+	
+	//FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
 
 	return 0;
 }
