@@ -77,18 +77,17 @@ public:
 	// false when there's no next frame
 	bool ReadNextFrame(cv::Mat& destination)
 	{
+		if (movieIterator == movie.end())
+			return false;
 		destination = *movieIterator;
 		movieIterator++;
-		if (movieIterator != movie.end())
-			return true;
-		else
-			return false;
+		return true;
 	}
 	void RewindToTheStart()
 	{
 		movieIterator = movie.begin();
 	}
-	void PlayFakeMovie()
+	void Play()
 	{
 		const std::string fakeMovieWindow = "Fake movie";
 
