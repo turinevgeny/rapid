@@ -4,14 +4,12 @@ project( RAPID C CXX)
 
 find_package( OpenCV REQUIRED )
 
-set( CORE_SOURCES Model.cpp RAPIDTracker.cpp VideoInfo.cpp )
+add_library( CORE_LIB Model.cpp RAPIDTracker.cpp VideoInfo.cpp )
 
 add_executable( RAPID
-				${CORE_SOURCES}
 				RAPID.cpp )
-target_link_libraries( RAPID ${OpenCV_LIBS} )
+target_link_libraries( RAPID CORE_LIB ${OpenCV_LIBS} )
 
 add_executable( RAPIDTesting
-				${CORE_SOURCES}
 				RapidTesting.cpp)
-target_link_libraries( RAPIDTesting ${OpenCV_LIBS} )
+target_link_libraries( RAPIDTesting CORE_LIB ${OpenCV_LIBS} )
