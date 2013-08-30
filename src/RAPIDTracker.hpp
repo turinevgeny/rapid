@@ -11,11 +11,10 @@ enum Direction {HORIZONTAL, VERTICAL, UPWARD_DIAGONAL, DOWNWARD_DIAGONAL};
 class RAPIDTracker
 {
 public:
-	RAPIDTracker(const std::string videoFile, const Model& model);
+	RAPIDTracker(const Model& model);
 	virtual Model ProcessFrame(const cv::Mat& frame);
 private:
 	Model		model;
-	std::string videoFile;
 private:
 	cv::Mat		ExtractEdges(const cv::Mat& image) const;
 	double		GetDisplacement(cv::Point2d controlPoint, cv::Point2d companionPoint, const cv::Mat& edges, cv::Point2d& foundPoint);

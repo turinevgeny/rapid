@@ -7,9 +7,8 @@
 
 #include "RAPIDTracker.hpp"
 
-RAPIDTracker::RAPIDTracker(const std::string _videoFile, const Model& _model)
+RAPIDTracker::RAPIDTracker(const Model& _model)
 {
-	videoFile = _videoFile;
 	model = _model;
 }
 

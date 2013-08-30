@@ -132,7 +132,7 @@ int main(int argn, char* argv[])
 
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
 
-    RAPIDTracker tracker("", model);
+    RAPIDTracker tracker(model);
 
     Model updatedModel = GetHardcodedModel();
     cv::Mat movieFrame;
@@ -144,7 +144,7 @@ int main(int argn, char* argv[])
 	    movieFrame = updatedModel.Outline(movieFrame);
         cv::imshow(nextWindowName, movieFrame);
 		cv::waitKey();
-        movieFrame = cv::Mat::eye(VideoHeight,VideoWidth,CV_8UC3); //does not help! 
+        movieFrame = cv::Mat::zeros(VideoHeight,VideoWidth,CV_8UC3); //does not help! 
     }
     //movie.Play();
 

@@ -80,7 +80,7 @@ int main(int argn, char* argv[])
     }
 
     Model model(tVec.t(), videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec);
-    RAPIDTracker tracker("", model);
+    RAPIDTracker tracker(model);
 
     const std::string nextWindowName = "Next";
     const std::string currentWindowName = "Current";
