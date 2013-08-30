@@ -158,15 +158,7 @@ bool GetRotationAndTranslationVector(const cv::Mat& circlesImage,
     cv::namedWindow("drawChessboardCorners", CV_WINDOW_AUTOSIZE);
     cv::imshow("drawChessboardCorners", view);
 
-    //How to get the point (Box3DPoint) in camera coordinates.
-    cv::Mat rmat(3, 3, CV_64F);
-    cv::Rodrigues(rvec, rmat);
-    cout << "Rotate matrix" << endl << rmat << endl;
-    cout << "rmat * Box3DPoint" << endl << rmat * Box3DPoint << endl;
-    Box3DPoint =  rmat * Box3DPoint + tvec;
-
-    cout << "Box3DPoint" << endl << Box3DPoint << endl; 
-    // Box3DPoint = (0,0,0) in box coordinates, so it's equal tvec in camera coordinates
+    cout << "Coordinates of block's reference point in camera coordinates" << endl << tvec << endl; 
 
     tVector = tvec;
     rVector = rvec;
