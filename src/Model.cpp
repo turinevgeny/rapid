@@ -123,43 +123,49 @@ cv::Point2d Model::Project(const cv::Mat& _3DPoint) const
     return projectedPoints[0];
 }
 
-cv::Mat Model::Outline(const cv::Mat& source)
+cv::Mat Model::Outline(const cv::Mat&   source,
+                       const bool       isDrawControlPoints,
+                       const cv::Scalar color,
+                       const bool       isDrawCompanionPoints)
 {
 	cv::Mat result = source.clone();
 
-	cv::Scalar whiteColor = cv::Scalar(cv::Scalar::all(255));
-
 	// drawing edges
-	cv::line(result, Project(cornerPoints[0]), Project(cornerPoints[1]), whiteColor, 1, 8);
-	cv::line(result, Project(cornerPoints[1]), Project(cornerPoints[2]), whiteColor, 1, 8);
- 	cv::line(result, Project(cornerPoints[2]), Project(cornerPoints[3]), whiteColor, 1, 8);
-	cv::line(result, Project(cornerPoints[0]), Project(cornerPoints[4]), whiteColor, 1, 8);
+	cv::line(result, Project(cornerPoints[0]), Project(cornerPoints[1]), color, 1, 8);
+	cv::line(result, Project(cornerPoints[1]), Project(cornerPoints[2]), color, 1, 8);
+ 	cv::line(result, Project(cornerPoints[2]), Project(cornerPoints[3]), color, 1, 8);
+	cv::line(result, Project(cornerPoints[0]), Project(cornerPoints[4]), color, 1, 8);
  
- 	cv::line(result, Project(cornerPoints[4]), Project(cornerPoints[5]), whiteColor, 1, 8);
- 	cv::line(result, Project(cornerPoints[5]), Project(cornerPoints[6]), whiteColor, 1, 8);
-	cv::line(result, Project(cornerPoints[6]), Project(cornerPoints[7]), whiteColor, 1, 8);
-	cv::line(result, Project(cornerPoints[7]), Project(cornerPoints[4]), whiteColor, 1, 8);
+ 	cv::line(result, Project(cornerPoints[4]), Project(cornerPoints[5]), color, 1, 8);
+ 	cv::line(result, Project(cornerPoints[5]), Project(cornerPoints[6]), color, 1, 8);
+	cv::line(result, Project(cornerPoints[6]), Project(cornerPoints[7]), color, 1, 8);
+	cv::line(result, Project(cornerPoints[7]), Project(cornerPoints[4]), color, 1, 8);
 
- 	cv::line(result, Project(cornerPoints[0]), Project(cornerPoints[3]), whiteColor, 1, 8);
-	cv::line(result, Project(cornerPoints[1]), Project(cornerPoints[5]), whiteColor, 1, 8);
-	cv::line(result, Project(cornerPoints[2]), Project(cornerPoints[6]), whiteColor, 1, 8);
-	cv::line(result, Project(cornerPoints[3]), Project(cornerPoints[7]), whiteColor, 1, 8);
+ 	cv::line(result, Project(cornerPoints[0]), Project(cornerPoints[3]), color, 1, 8);
+	cv::line(result, Project(cornerPoints[1]), Project(cornerPoints[5]), color, 1, 8);
+	cv::line(result, Project(cornerPoints[2]), Project(cornerPoints[6]), color, 1, 8);
+	cv::line(result, Project(cornerPoints[3]), Project(cornerPoints[7]), color, 1, 8);
 
-	// drawing cotrol points
-	std::list<cv::Mat>::iterator controlPointsIter = controlPoints.begin();
-	while (controlPointsIter != controlPoints.end())
+    
+    if (isDrawControlPoints)
+    {
+	    std::list<cv::Mat>::iterator controlPointsIter = controlPoints.begin();
+	    while (controlPointsIter != controlPoints.end())
+	    {
+		    cv::circle(result, Project(*controlPointsIter), 4, color);
+		    controlPointsIter++;
+	    }
+    }
+
+    if (isDrawCompanionPoints)
 	{
-		cv::circle(result, Project(*controlPointsIter), 4, cv::Scalar(cv::Scalar::all(255)));
-		controlPointsIter++;
-	}
-
-	// drawing companion points
-// 	std::list<cv::Mat>::iterator companionPointsIter = companionPoints.begin();
-// 	while (companionPointsIter != companionPoints.end())
-// 	{
-// 		cv::circle(result, Project(T+*companionPointsIter), 5, Scalar(0,255,0) );
-// 		companionPointsIter++;
-// 	}
+ 	    std::list<cv::Mat>::iterator companionPointsIter = companionPoints.begin();
+ 	    while (companionPointsIter != companionPoints.end())
+ 	    {
+ 		    cv::circle(result, Project(T+*companionPointsIter), 5, cv::Scalar(0,255,0) );
+ 		    companionPointsIter++;
+ 	    }
+    }
 
 	return result;
 }

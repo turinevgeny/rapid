@@ -60,7 +60,7 @@ public:
 	// filmScenario is a list of a vectors-solutions (angles|translation)
 	FakeMovie(std::list<cv::Mat> filmScenario, Model initialModelState, int height, int width)
 	{
-		cv::Mat initialFrame = initialModelState.Outline(GetBlackFrame(height, width));
+		cv::Mat initialFrame = initialModelState.Outline(GetBlackFrame(height, width), false);
 		movie.push_back(initialFrame);
 		Model currentModelState = initialModelState;
 
@@ -68,7 +68,7 @@ public:
 		while (scenarioIterator != filmScenario.end())
 		{
 			currentModelState.updatePose(*scenarioIterator);
-			movie.push_back(currentModelState.Outline(GetBlackFrame(height, width)));
+			movie.push_back(currentModelState.Outline(GetBlackFrame(height, width), false));
 			scenarioIterator++;
 		}
 
@@ -120,7 +120,7 @@ int main(int argn, char* argv[])
 	const int VideoHeight = 480;
 	const int VideoWidth = 640;
 
-	cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, -0.001, 0.002, 4.0, 5.0, -1.0);
+	cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, -0.001, 0.002, 0.5, 0.3, -0.1);
 
 	Model model = GetHardcodedModel();
 	//model.updatePose(firstMovement);
@@ -134,17 +134,18 @@ int main(int argn, char* argv[])
 
     RAPIDTracker tracker(model);
 
-    Model updatedModel = GetHardcodedModel();
+    //Model updatedModel = GetHardcodedModel();
     cv::Mat movieFrame;
+
     while(movie.ReadNextFrame(movieFrame)){
-        
-        cv::Mat prev = model.Outline(movieFrame);
+        cv::Scalar blueColor = cv::Scalar(255, 0, 0);
+        cv::Mat prev = model.Outline(movieFrame, true, blueColor);
 		cv::imshow(currentWindowName, prev);
-        updatedModel = tracker.ProcessFrame(movieFrame);
-	    movieFrame = updatedModel.Outline(movieFrame);
+        Model updatedModel = tracker.ProcessFrame(movieFrame);
+	    movieFrame = updatedModel.Outline(movieFrame, true, blueColor);
         cv::imshow(nextWindowName, movieFrame);
 		cv::waitKey();
-        movieFrame = cv::Mat::zeros(VideoHeight,VideoWidth,CV_8UC3); //does not help! 
+        movieFrame = cv::Mat::zeros(VideoHeight, VideoWidth, CV_8UC3); //does not help! 
     }
     //movie.Play();
 

@@ -24,7 +24,10 @@ public:
           const cv::Mat& rotationVector,
           const cv::Mat& translateVector);
 	~Model();
-	cv::Mat         Outline(const cv::Mat& source);			// projects the model onto the image
+	cv::Mat         Outline(const cv::Mat&   source,
+                            const bool       isDrawControlPoints = true,
+                            const cv::Scalar color = (cv::Scalar::all(255)),
+                            const bool       isDrawCompanionPoints = false);	      // projects the model onto the image
 	void			updatePose(const cv::Mat& rotVector, const cv::Mat& transVector); // 3d vectors
 	void			updatePose(const cv::Mat& solution);	// solution = rotation angles concat translation distances
 private:
