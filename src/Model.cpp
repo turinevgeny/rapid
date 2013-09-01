@@ -162,7 +162,7 @@ cv::Mat Model::Outline(const cv::Mat&   source,
  	    std::list<cv::Mat>::iterator companionPointsIter = companionPoints.begin();
  	    while (companionPointsIter != companionPoints.end())
  	    {
- 		    cv::circle(result, Project(T+*companionPointsIter), 5, cv::Scalar(0,255,0) );
+ 		    cv::circle(result, Project(*companionPointsIter), 5, cv::Scalar(0,255,0) );
  		    companionPointsIter++;
  	    }
     }
@@ -173,7 +173,7 @@ cv::Mat Model::Outline(const cv::Mat&   source,
 // adds control points located on i-j edge
 void Model::AddControlPointsFromTheEdge(int i, int j)
 {
-    const double offset = 0.15;
+    const double offset = 0.3;
 
 	const double companionPointsOffset = 0.3;
 
@@ -221,9 +221,9 @@ void Model::SetControlPoints()
 	//AddControlPointsFromTheEdge(4, 5);
 	AddControlPointsFromTheEdge(5, 6);
 	//AddControlPointsFromTheEdge(6, 7);
-	//AddControlPointsFromTheEdge(7, 4);
+	AddControlPointsFromTheEdge(7, 4);
 
-	//AddControlPointsFromTheEdge(0, 3);
+	AddControlPointsFromTheEdge(0, 3);
 	AddControlPointsFromTheEdge(1, 5);
 	//AddControlPointsFromTheEdge(2, 6);
 	AddControlPointsFromTheEdge(3, 7);

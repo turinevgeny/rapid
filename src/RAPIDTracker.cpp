@@ -23,7 +23,7 @@ cv::Mat RAPIDTracker::ExtractEdges(const cv::Mat& image) const
 	return edges;
 }
 
-double RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d companionPoint, const cv::Mat& edges, cv::Point2d& foundPoint)
+bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d companionPoint, const cv::Mat& edges, cv::Point2d& foundPoint, cv::Point2d& foundPoint2, double& length)
 {
 	double kx=1/model.cameraMatrix.at<double>(0,0);
 	double ky=1/model.cameraMatrix.at<double>(1,1);
@@ -102,10 +102,19 @@ double RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compa
 		currY2+=dy2;
 	}
 
-	if(diff1==255)
+	if (diff1==255) 
 		foundPoint = cv::Point2d(currX1, currY1);
-	else
-		foundPoint = cv::Point2d(currX2, currY2);
+	else 
+        if(diff2!=255) 
+		    foundPoint = cv::Point2d(currX2, currY2);
+        else
+        {
+            std::cout<<"Warning: Point isn't found for control point( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<std::endl;
+            foundPoint = cv::Point2d(currX1, currY1);
+            foundPoint2 = cv::Point2d(currX2, currY2);
+            return false;
+        }
+
 
 //	std::cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
 //	std::cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
@@ -116,19 +125,19 @@ double RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compa
 	switch(foundDirection)
 	{
 		case DOWNWARD_DIAGONAL:
-			return num*(ky*cosineAlpha+kx*sineAlpha);
+			length = num*(ky*cosineAlpha+kx*sineAlpha);
 			break;
 		case UPWARD_DIAGONAL:
-			return num*(ky*cosineAlpha-kx*sineAlpha);
+			length = num*(ky*cosineAlpha-kx*sineAlpha);
 			break;
 		case VERTICAL:
-			return num*ky*cosineAlpha;
+			length = num*ky*cosineAlpha;
 			break;
 		case HORIZONTAL:
-			return -num*kx*sineAlpha;
+			length = -num*kx*sineAlpha;
 			break;
 	}
-	return -1;
+	return true;
 }
 
 //Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
@@ -144,7 +153,7 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 //	namedWindow("canny", CV_WINDOW_AUTOSIZE);
 //	imshow("canny",edges);
 
-	cv::Point2d foundPoint;
+	cv::Point2d foundPoint,foundPoint2;
 	double l;
 	double tempX,tempY;
 	double sineAlpha,cosineAlpha;
@@ -158,33 +167,42 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 		cv::Point2d r = model.Project(/*model.T+*/*controlPointsIter);
 		cv::Point2d s = model.Project(/*model.T+*/*companionPointsIter);
 
-		std::cout << "l:" <<  GetDisplacement(r,s,result,foundPoint) << std::endl;
-		l = GetDisplacement(r,s,edges,foundPoint);
+        if (GetDisplacement(r,s,edges,foundPoint,foundPoint2,l))
+        {
+		    std::cout << "length:" << l << std::endl;
 
-		cv::circle(result, foundPoint, 4, cv::Scalar(0,0,255));
-		cv::line(result, foundPoint, r, cv::Scalar(0,255,0), 1, 8);
+		    cv::circle(result, foundPoint, 4, cv::Scalar(0,0,255));
+		    cv::line(result, foundPoint, r, cv::Scalar(0,255,0), 1, 8);
 
-		tempX=(s.x-r.x);
-		tempY=(s.y-r.y);
-		sineAlpha    = tempY/sqrt(tempX*tempX + tempY*tempY);
-		cosineAlpha  = tempX/sqrt(tempX*tempX + tempY*tempY);
+		    tempX=(s.x-r.x);
+		    tempY=(s.y-r.y);
+		    sineAlpha    = tempY/sqrt(tempX*tempX + tempY*tempY);
+		    cosineAlpha  = tempX/sqrt(tempX*tempX + tempY*tempY);
 
-		double x=r.x;
-		double y=r.y;
-		double Px=(*controlPointsIter).at<double>(0,0);
-		double Py=(*controlPointsIter).at<double>(0,1);
-		double Pz=(*controlPointsIter).at<double>(0,2);
-		double Tz=model.T.at<double>(0,2);
+		    double x=r.x;
+		    double y=r.y;
+		    double Px=(*controlPointsIter).at<double>(0,0);
+		    double Py=(*controlPointsIter).at<double>(0,1);
+		    double Pz=(*controlPointsIter).at<double>(0,2);
+		    double Tz=model.T.at<double>(0,2);
 
-		a = (cv::Mat_<double>(6,1) <<  -x*Py, x*Px+Pz, -Py, 1, 0,-x);
-		b = (cv::Mat_<double>(6,1) <<  -y*Py-Pz, y*Px,  Px, 0, 1,-y);
-		a/=Tz+Pz;
-		b/=Tz+Pz;
-		c=a*cosineAlpha-b*sineAlpha;
+		    a = (cv::Mat_<double>(6,1) <<  -x*Py, x*Px+Pz, -Py, 1, 0,-x);
+		    b = (cv::Mat_<double>(6,1) <<  -y*Py-Pz, y*Px,  Px, 0, 1,-y);
+		    a/=Tz+Pz;
+		    b/=Tz+Pz;
+		    c=a*cosineAlpha-b*sineAlpha;
 
-		left += c*c.t();
-		right += c*l;	// why does it move so strange ?????
-		//right-=c*abs(l);// why doesn't it move ?????????????
+		    left += c*c.t();
+		    right += c*l;	// why does it move so strange ?????
+		    //right-=c*abs(l);// why doesn't it move ?????????????
+        }
+        else 
+        {
+            cv::circle(result, foundPoint, 1, cv::Scalar(255,0,255));
+            cv::circle(result, foundPoint2, 1, cv::Scalar(255,0,255));
+		    cv::line(result, foundPoint, foundPoint2, cv::Scalar(0,255,0), 1, 8);
+            cv::line(result, foundPoint, r, cv::Scalar(255,0,0), 1, 8);
+        }
 
 		controlPointsIter++;
 		companionPointsIter++;

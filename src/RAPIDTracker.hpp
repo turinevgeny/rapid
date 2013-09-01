@@ -17,7 +17,7 @@ private:
 	Model		model;
 private:
 	cv::Mat		ExtractEdges(const cv::Mat& image) const;
-	double		GetDisplacement(cv::Point2d controlPoint, cv::Point2d companionPoint, const cv::Mat& edges, cv::Point2d& foundPoint);
+	bool		GetDisplacement(cv::Point2d controlPoint, cv::Point2d companionPoint, const cv::Mat& edges, cv::Point2d& foundPoint, cv::Point2d& foundPoint2, double& length);
 };
 
 #endif
