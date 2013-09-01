@@ -158,7 +158,7 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 		cv::Point2d r = model.Project(/*model.T+*/*controlPointsIter);
 		cv::Point2d s = model.Project(/*model.T+*/*companionPointsIter);
 
-		//std::cout << "l:" <<  GetDisplacement(r,s,result,foundPoint) << endl;
+		std::cout << "l:" <<  GetDisplacement(r,s,result,foundPoint) << std::endl;
 		l = GetDisplacement(r,s,edges,foundPoint);
 
 		cv::circle(result, foundPoint, 4, cv::Scalar(0,0,255));
@@ -182,8 +182,8 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 		b/=Tz+Pz;
 		c=a*cosineAlpha-b*sineAlpha;
 
-		left +=c*c.t();
-		right-=c*l;	// why does it move so strange ?????
+		left += c*c.t();
+		right += c*l;	// why does it move so strange ?????
 		//right-=c*abs(l);// why doesn't it move ?????????????
 
 		controlPointsIter++;
@@ -193,7 +193,7 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 	cv::solve(left,right,solution);
 
 	//std::cout << std::endl << "right " << right << std::endl << "; left "<< left*solution << std::endl;
-
+	std::cout << std::endl << "solution " << right << std::endl;
 	model.updatePose(solution);
 
 	cv::namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);

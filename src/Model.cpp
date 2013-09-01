@@ -198,7 +198,6 @@ void Model::AddControlPointsFromTheEdge(int i, int j)
 	companionPoints.push_back(s);
 	s.release();
 
-
     for (int k = 1; k < pointsPerEdge-1; k++)
 	{
 		p = cornerPoints[i] - direction*(k / (double) (pointsPerEdge-1));
@@ -214,17 +213,17 @@ void Model::AddControlPointsFromTheEdge(int i, int j)
 void Model::SetControlPoints()
 {
 	// pointsPerEdge control point correspond to every edge
-	//AddControlPointsFromTheEdge(1, 2);
-	AddControlPointsFromTheEdge(0, 1);
+	AddControlPointsFromTheEdge(1, 2);
+	//AddControlPointsFromTheEdge(0, 1);
  	//AddControlPointsFromTheEdge(2, 3);
 	//AddControlPointsFromTheEdge(0, 4);
 
 	//AddControlPointsFromTheEdge(4, 5);
 	AddControlPointsFromTheEdge(5, 6);
-	AddControlPointsFromTheEdge(6, 7);
+	//AddControlPointsFromTheEdge(6, 7);
 	//AddControlPointsFromTheEdge(7, 4);
 
-	AddControlPointsFromTheEdge(0, 3);
+	//AddControlPointsFromTheEdge(0, 3);
 	AddControlPointsFromTheEdge(1, 5);
 	//AddControlPointsFromTheEdge(2, 6);
 	AddControlPointsFromTheEdge(3, 7);

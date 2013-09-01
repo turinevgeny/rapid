@@ -120,7 +120,8 @@ int main(int argn, char* argv[])
 	const int VideoHeight = 480;
 	const int VideoWidth = 640;
 
-	cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, -0.001, 0.002, 0.5, 0.3, -0.1);
+	//cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, -0.001, 0.002, 0.01, 0.03, -0.01);
+    cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
 
 	Model model = GetHardcodedModel();
 	//model.updatePose(firstMovement);
@@ -128,15 +129,17 @@ int main(int argn, char* argv[])
 	std::list<cv::Mat> fakeMovieScenario;
 
     for(int i=0;i<20;i++)
-	    fakeMovieScenario.push_back(firstMovement);
+		fakeMovieScenario.push_back(firstMovement);
 
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
-
+	//movie.Play();
     RAPIDTracker tracker(model);
 
     //Model updatedModel = GetHardcodedModel();
     cv::Mat movieFrame;
-
+	movie.ReadNextFrame(movieFrame);
+	movie.ReadNextFrame(movieFrame);
+	movie.ReadNextFrame(movieFrame);
     while(movie.ReadNextFrame(movieFrame)){
         cv::Scalar blueColor = cv::Scalar(255, 0, 0);
         cv::Mat prev = model.Outline(movieFrame, true, blueColor);
@@ -145,7 +148,7 @@ int main(int argn, char* argv[])
 	    movieFrame = updatedModel.Outline(movieFrame, true, blueColor);
         cv::imshow(nextWindowName, movieFrame);
 		cv::waitKey();
-        movieFrame = cv::Mat::zeros(VideoHeight, VideoWidth, CV_8UC3); //does not help! 
+        //movieFrame = cv::Mat::zeros(VideoHeight, VideoWidth, CV_8UC3); //does not help! 
     }
     //movie.Play();
 
