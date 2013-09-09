@@ -75,7 +75,7 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compani
 
 	// findImageEdge
 
-	int num=0;
+	int num=0; //TODO! Maybe num=1
 	int diff1=0,diff2=0;
 	double currX1=controlPoint.x;
 	double currY1=controlPoint.y;
@@ -85,42 +85,56 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compani
 	int cols=edges.cols;
 	int rows=edges.rows;
 
-
-// 	diff1=edges.at<uchar>(currY1,currX1);
-// 	diff2=edges.at<uchar>(currY2,currX2);
+ 	diff2=diff1=edges.at<uchar>(currY1,currX1);
 
 	while( (currX1<cols)&&(currX2<cols)&&(currY1<rows)&&(currY2<rows)&&
 		   (currX1>0)&&(currX2>0)&&(currY1>0)&&(currY2>0)&& 
 		   (diff1!=255) && (diff2!=255) )
 	{
-		num++;
-		diff1=edges.at<uchar>(currY1,currX1);
-		diff2=edges.at<uchar>(currY2,currX2);
-		currX1+=dx1;
+        currX1+=dx1;
 		currY1+=dy1;
 		currX2+=dx2;
 		currY2+=dy2;
+		diff1=edges.at<uchar>(currY1,currX1);
+		diff2=edges.at<uchar>(currY2,currX2);
+        num++;
 	}
 
 	if (diff1==255) 
+    {
 		foundPoint = cv::Point2d(currX1, currY1);
+        if ((diff2==255) && (num == 0))
+        { 
+            std::cout<<"Warning: The found point and the control point are the same! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<std::endl;
+        }
+        if ((diff2==255) && (num > 0))
+        {
+            foundPoint2 = cv::Point2d(currX2, currY2);
+            std::cout<<"Warning: Found two points! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<std::endl;
+            std::cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<std::endl;
+            std::cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<std::endl;
+        }
+    }
 	else 
-        if(diff2!=255) 
+    {
+        if(diff2==255) 
 		    foundPoint = cv::Point2d(currX2, currY2);
         else
         {
-            std::cout<<"Warning: Point isn't found for control point( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<std::endl;
             foundPoint = cv::Point2d(currX1, currY1);
             foundPoint2 = cv::Point2d(currX2, currY2);
+            std::cout<<"Warning: Point isn't found for control point( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<std::endl;
+            std::cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<std::endl;
+            std::cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<std::endl;
             return false;
         }
+    }
 
-
-//	std::cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
-//	std::cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
+    //std::cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
+    //std::cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
 
 	// Displays how many iterations are searched foundPoints
-		//cout<<"num  "<<num<<endl;
+	//cout<<"num  "<<num<<endl;
 
 	switch(foundDirection)
 	{
@@ -172,6 +186,7 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 		    std::cout << "length:" << l << std::endl;
 
 		    cv::circle(result, foundPoint, 4, cv::Scalar(0,0,255));
+            cv::circle(result, foundPoint2, 4, cv::Scalar(255,0,255));
 		    cv::line(result, foundPoint, r, cv::Scalar(0,255,0), 1, 8);
 
 		    tempX=(s.x-r.x);
