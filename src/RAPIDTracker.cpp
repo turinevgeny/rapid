@@ -7,8 +7,6 @@
 
 #include "RAPIDTracker.hpp"
 
-#define ENABLE_TESTING
-
 RAPIDTracker::RAPIDTracker(const Model& _model)
 {
 	model = _model;
@@ -17,12 +15,10 @@ RAPIDTracker::RAPIDTracker(const Model& _model)
 cv::Mat RAPIDTracker::ExtractEdges(const cv::Mat& image) const
 {
 	cv::Mat edges;
-	cv::cvtColor(image, edges, CV_BGR2GRAY); //TODO: Is it necessary for RapidTesting?
 
-#ifndef ENABLE_TESTING
+	cv::cvtColor(image, edges, CV_BGR2GRAY);
 	cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
 	cv::Canny(edges, edges, 20, 100, 3);
-#endif
 
 	return edges;
 }
@@ -79,7 +75,7 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compani
 
 	// findImageEdge
 
-	int num=0;
+	int num=0; //TODO! Maybe num=1
 	int diff1=0,diff2=0;
 	double currX1=controlPoint.x;
 	double currY1=controlPoint.y;
@@ -166,12 +162,10 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 	std::list<cv::Mat>::iterator controlPointsIter = model.controlPoints.begin();
 	std::list<cv::Mat>::iterator companionPointsIter = model.companionPoints.begin();
 
-	cv::Mat edges = ExtractEdges(result); 
+	cv::Mat edges = ExtractEdges(result);
 
-#ifndef ENABLE_TESTING
-	cv::namedWindow("canny", CV_WINDOW_AUTOSIZE);
-	imshow("canny",edges);
-#endif
+//	namedWindow("canny", CV_WINDOW_AUTOSIZE);
+//	imshow("canny",edges);
 
 	cv::Point2d foundPoint,foundPoint2;
 	double l;
