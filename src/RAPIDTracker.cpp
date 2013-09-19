@@ -4,6 +4,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 
 #include "RAPIDTracker.hpp"
 
@@ -31,6 +32,7 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compani
 {
 	double kx=1/model.cameraMatrix.at<double>(0,0);
 	double ky=1/model.cameraMatrix.at<double>(1,1);
+
 	double beta = ky/kx;
 
 	double tempX=(companionPoint.x-controlPoint.x);
@@ -107,6 +109,7 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compani
 	if (diff1==255) 
     {
 		foundPoint = cv::Point2d(currX1, currY1);
+         //foundPoint2 = cv::Point2d(currX2, currY2);
         if ((diff2==255) && (num == 0))
         { 
             std::cout<<"Warning: The found point and the control point are the same! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<std::endl;
@@ -121,8 +124,11 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compani
     }
 	else 
     {
-        if(diff2==255) 
+        if(diff2==255)
+        {
 		    foundPoint = cv::Point2d(currX2, currY2);
+            //foundPoint2 = cv::Point2d(currX1, currY1);
+        }
         else
         {
             foundPoint = cv::Point2d(currX1, currY1);
@@ -137,8 +143,10 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compani
     //std::cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
     //std::cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
 
-	// Displays how many iterations are searched foundPoints
-	//cout<<"num  "<<num<<endl;
+    //Displays how many iterations are searched foundPoints
+	//std::cout<<"num  "<<num<<std::endl;
+
+    //std::cout<<"foundDirection  "<<foundDirection<<std::endl;
 
 	switch(foundDirection)
 	{
@@ -182,6 +190,9 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 	cv::Mat right = cv::Mat::zeros(6, 1, CV_64F);
 	cv::Mat left  = cv::Mat::zeros(6, 6, CV_64F);
 
+    std::vector<cv::Point2d> foundBoxPoints2D;
+    std::vector<cv::Point3d> modelPoints3D;
+
 	while (controlPointsIter != model.controlPoints.end())
 	{
 		cv::Point2d r = model.Project(/*model.T+*/*controlPointsIter);
@@ -189,6 +200,7 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 
         if (GetDisplacement(r,s,edges,foundPoint,foundPoint2,l))
         {
+            foundBoxPoints2D.push_back(foundPoint);
 		    std::cout << "length:" << l << std::endl;
 
 		    cv::circle(result, foundPoint, 4, cv::Scalar(0,0,255));
@@ -205,6 +217,9 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 		    double Px=(*controlPointsIter).at<double>(0,0);
 		    double Py=(*controlPointsIter).at<double>(0,1);
 		    double Pz=(*controlPointsIter).at<double>(0,2);
+
+            modelPoints3D.push_back(cv::Point3f(Px, Py, Pz));
+
 		    double Tz=model.T.at<double>(0,2);
 
 		    a = (cv::Mat_<double>(6,1) <<  -x*Py, x*Px+Pz, -Py, 1, 0,-x);
@@ -230,10 +245,16 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 	}
 	cv::Mat solution;
 	cv::solve(left,right,solution);
+    std::cout << std::endl << "Algoritm solution " << solution << std::endl;
 
-	//std::cout << std::endl << "right " << right << std::endl << "; left "<< left*solution << std::endl;
-	std::cout << std::endl << "solution " << right << std::endl;
-	model.updatePose(solution);
+    cv::Mat rvec,tvec;
+    cv::solvePnP(cv::Mat(modelPoints3D), cv::Mat(foundBoxPoints2D), model.cameraMatrix,
+        model.distortionCoefficients, rvec, tvec, false);
+    std::cout << "Rotate vector" << std::endl << rvec << std::endl << "Translate vector=" << std::endl << tvec << std::endl;
+
+	//std::cout << std::endl << "right " << right << std::endl << "; left "<< left*solution << std::endl
+
+	model.updatePose(rvec,tvec);
 
 	cv::namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);
 	cv::imshow("Current: foundPoints", result);
