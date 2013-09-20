@@ -213,10 +213,10 @@ void Model::AddControlPointsFromTheEdge(int i, int j)
 void Model::SetControlPoints()
 {
 	// pointsPerEdge control point correspond to every edge
-	AddControlPointsFromTheEdge(1, 2);
+	//AddControlPointsFromTheEdge(1, 2);
 	//AddControlPointsFromTheEdge(0, 1);
  	//AddControlPointsFromTheEdge(2, 3);
-	//AddControlPointsFromTheEdge(0, 4);
+	AddControlPointsFromTheEdge(0, 4);
 
 	//AddControlPointsFromTheEdge(4, 5);
 	AddControlPointsFromTheEdge(5, 6);
@@ -244,12 +244,12 @@ void Model::updatePose(const cv::Mat &solution)
 
 void Model::updatePose(const cv::Mat& angle, const cv::Mat& distance)
 {
-//	std::cout<<"angle= "<<endl<<angle<<endl;
-//	std::cout<<"distance= "<<endl<<distance<<endl;
-//	std::cout<<"T= "<<endl<<T<<endl;
+	//std::cout<<"--From Update Pose:  angle= "<<std::endl<<angle<<std::endl;
+	//std::cout<<"--From Update Pose:  distance= "<<std::endl<<distance<<std::endl;
+	//std::cout<<"--From Update Pose:  T= "<<std::endl<<T<<std::endl;
 
 	T+=distance.t();
-//	std::cout<<"new T= "<<endl<<T<<endl;
+//	std::cout<<"--From Update Pose:  new T= "<<endl<<T<<endl;
 
 //		cv::Mat test = (Mat_<double>(3,1) <<  0,0,1);
 //		cv::Mat tesl = (Mat_<double>(3,1) <<  0,1,0);

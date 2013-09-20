@@ -8,7 +8,8 @@
 
 #include "RAPIDTracker.hpp"
 
-#define ENABLE_TESTING
+// To disable Canny filter for RapidTesting
+//#define ENABLE_TESTING 
 
 RAPIDTracker::RAPIDTracker(const Model& _model)
 {
@@ -247,14 +248,15 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 	cv::solve(left,right,solution);
     std::cout << std::endl << "Algoritm solution " << solution << std::endl;
 
+    //std::cout << std::endl << "right " << right << std::endl << "; left "<< left*solution << std::endl; 
+    //model.updatePose(solution);
+
     cv::Mat rvec,tvec;
     cv::solvePnP(cv::Mat(modelPoints3D), cv::Mat(foundBoxPoints2D), model.cameraMatrix,
         model.distortionCoefficients, rvec, tvec, false);
-    std::cout << "Rotate vector" << std::endl << rvec << std::endl << "Translate vector=" << std::endl << tvec << std::endl;
+    std::cout << "New rotate vector" << std::endl << rvec << std::endl << "New translate vector=" << std::endl << tvec << std::endl;
 
-	//std::cout << std::endl << "right " << right << std::endl << "; left "<< left*solution << std::endl
-
-	model.updatePose(rvec,tvec);
+    model.updatePose(rvec - model.rotationVector, tvec - model.translateVector);
 
 	cv::namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);
 	cv::imshow("Current: foundPoints", result);
