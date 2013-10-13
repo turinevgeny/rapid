@@ -51,10 +51,10 @@ Model::Model(/*const cv::Mat& _T,*/
 	SetControlPoints();
 }
 
-Model::Model(Model& model)
+Model::Model(const Model& model)
 {
     {
-        std::vector<cv::Mat>::iterator cornerPointsIterSrc = model.cornerPoints.begin();
+        std::vector<cv::Mat>::const_iterator cornerPointsIterSrc = model.cornerPoints.begin();
         while (cornerPointsIterSrc != model.cornerPoints.end())
         {
             this->cornerPoints.push_back((*cornerPointsIterSrc).clone());
@@ -63,7 +63,7 @@ Model::Model(Model& model)
     }
 
     {
-        std::list<cv::Mat>::iterator controlPointsIterSrc = model.controlPoints.begin();
+        std::list<cv::Mat>::const_iterator controlPointsIterSrc = model.controlPoints.begin();
         while (controlPointsIterSrc != model.controlPoints.end())
         {
             this->controlPoints.push_back((*controlPointsIterSrc).clone());
@@ -72,7 +72,7 @@ Model::Model(Model& model)
     }
 
     {
-        std::list<cv::Mat>::iterator companionPointsIterSrc = model.companionPoints.begin();
+        std::list<cv::Mat>::const_iterator companionPointsIterSrc = model.companionPoints.begin();
         while (companionPointsIterSrc != model.companionPoints.end())
         {
             this->companionPoints.push_back((*companionPointsIterSrc).clone());

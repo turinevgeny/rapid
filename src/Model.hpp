@@ -23,7 +23,8 @@ public:
           const cv::Mat& distortionCoefficients,
           const cv::Mat& rotationVector,
           const cv::Mat& translateVector);
-    Model(Model& model);
+    Model(const Model& model);
+    //Model& operator= (const Model& other);
 	~Model();
     void            DrawReferencePoints(const cv::Mat&   source, cv::Mat& patternOrigin3D, int numFrame); // to draw the origin of model and the origin of pattern
 	cv::Mat         Outline(const cv::Mat&   source,
