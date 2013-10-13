@@ -24,6 +24,7 @@ public:
           const cv::Mat& rotationVector,
           const cv::Mat& translateVector);
 	~Model();
+    void            DrawReferencePoints(const cv::Mat&   source, cv::Mat& patternOrigin3D); // to draw the origin of model and the origin of pattern
 	cv::Mat         Outline(const cv::Mat&   source,
                             const bool       isDrawControlPoints = true,
                             const cv::Scalar color = (cv::Scalar::all(255)),

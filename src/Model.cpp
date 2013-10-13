@@ -114,13 +114,38 @@ cv::Point2d Model::ManualProject(const cv::Mat& _3DPoint) const
 	return cv::Point2d(u,v);
 }
 
-
 // Projecting using OpenCV function
 cv::Point2d Model::Project(const cv::Mat& _3DPoint) const
 {
 	std::vector<cv::Point2d> projectedPoints;
 	cv::projectPoints(_3DPoint, rotationVector, translateVector, cameraMatrix, distortionCoefficients, projectedPoints);
     return projectedPoints[0];
+}
+
+void Model::DrawReferencePoints(const cv::Mat& source, cv::Mat& patternOrigin3D)
+{
+    cv::Mat view = source.clone();
+
+    cv::Mat boxOrigibPoint3D = cv::Mat::zeros(3, 1, CV_64F);
+    cv::Mat boxOrigibPoint2D = cv::Mat::zeros(2, 1, CV_64F);
+    cv::Mat patternOrigin2D = cv::Mat::zeros(2, 1, CV_64F);
+
+    cv::projectPoints(boxOrigibPoint3D.t(), rotationVector, translateVector, cameraMatrix, distortionCoefficients, boxOrigibPoint2D);
+    cv::projectPoints(patternOrigin3D.t(), rotationVector, translateVector, cameraMatrix, distortionCoefficients, patternOrigin2D);
+
+    cv::Point2d boxCenter(boxOrigibPoint2D.at<double>(0,0), boxOrigibPoint2D.at<double>(0,1));
+    cv::Point2d patternCenter(patternOrigin2D.at<double>(0,0), patternOrigin2D.at<double>(0,1));
+
+    //draw box's reference point
+    cv::circle(view, boxCenter, 2, cv::Scalar(0,0,255), 2); //red
+    //draw pattern's reference point
+    cv::circle(view, patternCenter, 2, cv::Scalar(0,255,0), 2); //green
+
+    cv::namedWindow("DrawReferencePoints", CV_WINDOW_AUTOSIZE);
+    cv::imshow("DrawReferencePoints", view);
+
+    std::cout << "Coordinates of box's reference point in camera coordinates" << std::endl << translateVector << std::endl; 
+
 }
 
 cv::Mat Model::Outline(const cv::Mat&   source,
@@ -244,16 +269,18 @@ void Model::updatePose(const cv::Mat &solution)
 
 void Model::updatePose(const cv::Mat& angle, const cv::Mat& distance)
 {
-	//std::cout<<"--From Update Pose:  angle= "<<std::endl<<angle<<std::endl;
-	//std::cout<<"--From Update Pose:  distance= "<<std::endl<<distance<<std::endl;
 	//std::cout<<"--From Update Pose:  T= "<<std::endl<<T<<std::endl;
+    //std::cout<<"--From Update Pose:  (model)Translate= "<<std::endl<<translateVector<<std::endl;
+    //std::cout<<"--From Update Pose:  (model)Rotate= "<<std::endl<<rotationVector<<std::endl;
 
-	T+=distance.t();
-//	std::cout<<"--From Update Pose:  new T= "<<endl<<T<<endl;
+	T+=distance.t();    
 
-//		cv::Mat test = (Mat_<double>(3,1) <<  0,0,1);
-//		cv::Mat tesl = (Mat_<double>(3,1) <<  0,1,0);
-//		std::cout<<"crossProduct!!"<<test.cross(tesl)<<endl;
+    //NOT needed??? The center of model coordinates doesn't move
+    //translateVector += distance; //TODO ???
+    //rotationVector += angle;     //TODO ???
+
+	std::cout<<"--From Update Pose:  (delta rotate) angle= "<<std::endl<<angle<<std::endl;
+    std::cout<<"--From Update Pose:  (delta translate) distance= "<<std::endl<<distance<<std::endl;
 
 	std::list<cv::Mat>::iterator controlPointsIter = controlPoints.begin();
 	while (controlPointsIter != controlPoints.end())

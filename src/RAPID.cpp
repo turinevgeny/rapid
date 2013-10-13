@@ -44,7 +44,8 @@ bool GetRotationAndTranslationVector(const cv::Mat& view,
                                      const cv::Mat& cameraMatrix,
                                      const cv::Mat& distortionCoefficients,
                                      cv::Mat& rVector,
-                                     cv::Mat& tVector);
+                                     cv::Mat& tVector,
+                                     cv::Mat& patternOrigin3D);
 
 int main(int argn, char* argv[])
 {
@@ -70,8 +71,8 @@ int main(int argn, char* argv[])
     for(int i = 0; i < firstFrame; i++)
         cap.read(frame);
 
-    cv::Mat rVec, tVec;
-    if (!GetRotationAndTranslationVector(frame, Camera_Matrix, Distortion_Coefficients, rVec, tVec))
+    cv::Mat rVec, tVec, patternOrigin3D;
+    if (!GetRotationAndTranslationVector(frame, Camera_Matrix, Distortion_Coefficients, rVec, tVec, patternOrigin3D))
     {
         cerr << endl << "Can't find the calibration pattern."<< endl
              << " Troubleshooting: change numberOfFirstFrame or the input video" << endl;
@@ -79,7 +80,7 @@ int main(int argn, char* argv[])
         return 1;
     }
 
-    Model model(tVec.t(), videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec);
+    Model model(tVec.t(), videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec); //TODO Duplicate T and TranslateVector
     RAPIDTracker tracker(model);
 
     const std::string nextWindowName = "Next";
@@ -90,6 +91,7 @@ int main(int argn, char* argv[])
 
 	while (cap.read(frame))
 	{
+        model.DrawReferencePoints(frame, patternOrigin3D);
 		cv::Mat prev = model.Outline(frame);
 		cv::imshow(currentWindowName, prev);
 		Model updatedModel = tracker.ProcessFrame(frame);
@@ -106,7 +108,8 @@ bool GetRotationAndTranslationVector(const cv::Mat& circlesImage,
                                      const cv::Mat& Camera_Matrix,
                                      const cv::Mat& Distortion_Coefficients,
                                      cv::Mat& rVector,
-                                     cv::Mat& tVector)
+                                     cv::Mat& tVector,
+                                     cv::Mat& patternOrigin3D)
 {
     std::vector<cv::Point2f> foundBoardCorners;
     std::vector<cv::Point3f> boardPoints;
@@ -126,6 +129,8 @@ bool GetRotationAndTranslationVector(const cv::Mat& circlesImage,
         for( int j = 0; j < boardSize.width; j++ )
             boardPoints.push_back(cv::Point3f(float((2*j + i % 2)*(-squareSize) + offsetX), offsetY, float(i*squareSize) + offsetZ));
 
+    patternOrigin3D = (cv::Mat_<double>(3,1) << boardPoints[40].x, boardPoints[40].y, boardPoints[40].z);
+    cout << "boardOrigin" << endl << patternOrigin3D << endl;
     cout << "boardPoints" << endl << boardPoints << endl;
     found = cv::findCirclesGrid(circlesImage, boardSize, foundBoardCorners, 2);
 
@@ -134,10 +139,6 @@ bool GetRotationAndTranslationVector(const cv::Mat& circlesImage,
     if (found) 
     {
         //drawChessboardCorners( view, boardSize, Mat(foundBoardCorners), found );
-
-        //draw reference circle
-        cv::circle(view, foundBoardCorners[40], 2, cv::Scalar(0,255,0), 2); //green
-
         cout << "found circles Grid!" << endl;
         cv::solvePnP(cv::Mat(boardPoints), cv::Mat(foundBoardCorners), Camera_Matrix,
                      Distortion_Coefficients, rvec, tvec, false);
@@ -145,20 +146,6 @@ bool GetRotationAndTranslationVector(const cv::Mat& circlesImage,
     }
     else
         return false;
-
-    cv::Mat Box3DPoint = cv::Mat::zeros(3, 1, CV_64F);
-    
-    cv::Mat expProjectedPoint = cv::Mat::zeros(3, 1, CV_64F);
-    cv::projectPoints( Box3DPoint.t(), rvec, tvec, Camera_Matrix, Distortion_Coefficients, expProjectedPoint);
-   
-    cv::Point2d center(expProjectedPoint.at<double>(0,0), expProjectedPoint.at<double>(0,1));
-
-    //draw block's reference point
-    cv::circle(view, center, 2, cv::Scalar(0,0,255), 2);
-    cv::namedWindow("drawChessboardCorners", CV_WINDOW_AUTOSIZE);
-    cv::imshow("drawChessboardCorners", view);
-
-    cout << "Coordinates of block's reference point in camera coordinates" << endl << tvec << endl; 
 
     tVector = tvec;
     rVector = rvec;
