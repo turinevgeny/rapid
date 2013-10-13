@@ -1,4 +1,4 @@
-#include <cmath>
+﻿#include <cmath>
 #include <iostream>
 
 #include <opencv2/core/core.hpp>
@@ -9,7 +9,7 @@
 #include "RAPIDTracker.hpp"
 
 // To disable Canny filter for RapidTesting
-//#define ENABLE_TESTING 
+//#define ENABLE_TESTING
 
 RAPIDTracker::RAPIDTracker(const Model& _model)
 {
@@ -29,7 +29,14 @@ cv::Mat RAPIDTracker::ExtractEdges(const cv::Mat& image) const
 	return edges;
 }
 
-bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d companionPoint, const cv::Mat& edges, cv::Point2d& foundPoint, cv::Point2d& foundPoint2, double& length)
+bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint,
+                                   cv::Point2d companionPoint, 
+                                   const cv::Mat& edges, 
+                                   cv::Point2d& foundPoint, 
+                                   cv::Point2d& foundPoint2, 
+                                   double& length,
+                                   double& sineAlpha,
+                                   double& cosineAlpha)
 {
 	double kx=1/model.cameraMatrix.at<double>(0,0);
 	double ky=1/model.cameraMatrix.at<double>(1,1);
@@ -45,8 +52,9 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint, cv::Point2d compani
 //		tempY *= -1;
 //	}
 
-	double sineAlpha    = tempY/sqrt(tempX*tempX + tempY*tempY);
-	double cosineAlpha  = tempX/sqrt(tempX*tempX + tempY*tempY);
+	sineAlpha    = tempY/sqrt(tempX*tempX + tempY*tempY);
+	cosineAlpha  = tempX/sqrt(tempX*tempX + tempY*tempY);
+
 	double tangentAlpha = sineAlpha/cosineAlpha;
 
 	double top = tan(CV_PI/4 + beta/2);
@@ -198,8 +206,7 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 	{
 		cv::Point2d r = model.Project(/*model.T+*/*controlPointsIter);
 		cv::Point2d s = model.Project(/*model.T+*/*companionPointsIter);
-
-        if (GetDisplacement(r,s,edges,foundPoint,foundPoint2,l))
+        if (GetDisplacement(r, s, edges, foundPoint, foundPoint2, l, sineAlpha, cosineAlpha))
         {
             foundBoxPoints2D.push_back(foundPoint);
 		    std::cout << "length:" << l << std::endl;
@@ -208,29 +215,32 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
             cv::circle(result, foundPoint2, 4, cv::Scalar(255,0,255));
 		    cv::line(result, foundPoint, r, cv::Scalar(0,255,0), 1, 8);
 
-		    tempX=(s.x-r.x);
-		    tempY=(s.y-r.y);
-		    sineAlpha    = tempY/sqrt(tempX*tempX + tempY*tempY);
-		    cosineAlpha  = tempX/sqrt(tempX*tempX + tempY*tempY);
+		    tempX = (s.x-r.x);
+		    tempY = (s.y-r.y);
 
-		    double x=r.x;
-		    double y=r.y;
-		    double Px=(*controlPointsIter).at<double>(0,0);
-		    double Py=(*controlPointsIter).at<double>(0,1);
-		    double Pz=(*controlPointsIter).at<double>(0,2);
+		    //sineAlpha   = tempY/sqrt(tempX*tempX + tempY*tempY); // (AR: Nikolay) To compare with the values ​​in GetDisplacement
+		    //cosineAlpha = tempX/sqrt(tempX*tempX + tempY*tempY); // (AR: Nikolay) To compare with the values ​​in GetDisplacement
 
-            modelPoints3D.push_back(cv::Point3f(Px, Py, Pz));
+		    double x = r.x;
+		    double y = r.y;
+		    double Px = (*controlPointsIter).at<double>(0,0);
+		    double Py = (*controlPointsIter).at<double>(0,1);
+		    double Pz = (*controlPointsIter).at<double>(0,2);
 
-		    double Tz=model.T.at<double>(0,2);
+            modelPoints3D.push_back(cv::Point3f(Px, Py, Pz)); //(AR: Evgeniy) Check coordinates. Coordinates must be integers
 
+		    double Tz = model.T.at<double>(0,2); // (AR: Nikolay) To deal with the sense of T. Understand difference between T and model.translate.
+                                                 // (AR: Nikolay) To draw reference points
 		    a = (cv::Mat_<double>(6,1) <<  -x*Py, x*Px+Pz, -Py, 1, 0,-x);
 		    b = (cv::Mat_<double>(6,1) <<  -y*Py-Pz, y*Px,  Px, 0, 1,-y);
-		    a/=Tz+Pz;
-		    b/=Tz+Pz;
-		    c=a*cosineAlpha-b*sineAlpha;
+		    a /= Tz + Pz;
+		    b /= Tz + Pz;
+		    c = a*cosineAlpha-b*sineAlpha;
 
-		    left += c*c.t();
-		    right += c*l;	// why does it move so strange ?????
+		    left += c*c.t(); // (AR: Evgeniy) to see on stages
+		    right += c*l;	 // (AR: Evgeniy) to check += operation
+
+            // why does it move so strange ?????
 		    //right-=c*abs(l);// why doesn't it move ?????????????
         }
         else 
@@ -248,14 +258,21 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 	cv::solve(left,right,solution);
     std::cout << std::endl << "Algoritm solution " << solution << std::endl;
 
-    //std::cout << std::endl << "right " << right << std::endl << "; left "<< left*solution << std::endl; 
+    std::cout << std::endl << "right " << right << std::endl << "; left "<< left*solution << std::endl; 
     //model.updatePose(solution);
+
+    cv::Mat angle = cv::Mat(solution, cv::Range(0,3), cv::Range(0,1));
+	cv::Mat distance = cv::Mat(solution, cv::Range(3,6), cv::Range(0,1));
 
     cv::Mat rvec,tvec;
     cv::solvePnP(cv::Mat(modelPoints3D), cv::Mat(foundBoxPoints2D), model.cameraMatrix,
         model.distortionCoefficients, rvec, tvec, false);
-    std::cout << "New rotate vector" << std::endl << rvec << std::endl << "New translate vector=" << std::endl << tvec << std::endl;
-
+    //std::cout << "---(SolvePnP) rotate vector" << std::endl << rvec << std::endl << "---(SolvePnP) translate vector=" << std::endl << tvec << std::endl;
+    std::cout << "---(SolvePnP) delta rotate vector" << std::endl << rvec - model.rotationVector<< std::endl;
+    std::cout << "---(SolvePnP) delta translate vector=" << std::endl << tvec - model.translateVector << std::endl << std::endl;
+    
+    std::cout << "---(Error) rotate vector" << std::endl << abs(rvec - model.rotationVector - angle) << std::endl;
+    std::cout << "---(Error) translate vector=" << std::endl << abs(tvec - model.translateVector - distance) << std::endl << std::endl;
     model.updatePose(rvec - model.rotationVector, tvec - model.translateVector);
 
 	cv::namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);
