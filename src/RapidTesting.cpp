@@ -19,7 +19,7 @@ Model GetHardcodedModel()
 	const double b = 45.0;
 	const double c = 65.0;
 
-	const cv::Mat T = (cv::Mat_<double>(1,3) << -15, 120, 352);
+	//const cv::Mat T = (cv::Mat_<double>(1,3) << -15, 120, 352);
 
 	const double alpha = CV_PI/2 - acos(100/a);
 
@@ -28,10 +28,10 @@ Model GetHardcodedModel()
 															  -sin(alpha), 0, cos(alpha));
 
 	const cv::Mat cornerPoints[] = {
-		(cv::Mat_<double>(1,3) << 0, 0, 0)*rotationMatrix,		// bottom anterior point on the left side
-		(cv::Mat_<double>(1,3) << b, 0, 0)*rotationMatrix,		// bottom anterior point on the right side
-		(cv::Mat_<double>(1,3) << b, 0, a)*rotationMatrix,		// bottom rear point on the right side
-		(cv::Mat_<double>(1,3) << 0, 0, a)*rotationMatrix,		// bottom rear point on the left side
+		(cv::Mat_<double>(1,3) << 0, 0, 0)*rotationMatrix,	// bottom anterior point on the left side
+		(cv::Mat_<double>(1,3) << b, 0, 0)*rotationMatrix,	// bottom anterior point on the right side
+		(cv::Mat_<double>(1,3) << b, 0, a)*rotationMatrix,	// bottom rear point on the right side
+		(cv::Mat_<double>(1,3) << 0, 0, a)*rotationMatrix,	// bottom rear point on the left side
 
 		(cv::Mat_<double>(1,3) << 0, -c, 0)*rotationMatrix,	// top anterior point on the left side
 		(cv::Mat_<double>(1,3) << b, -c, 0)*rotationMatrix,	// top anterior point on the right side
@@ -48,7 +48,7 @@ Model GetHardcodedModel()
 	const cv::Mat rotationVector = cv::Mat::zeros(3, 1, CV_64F);
 	const cv::Mat translateVector = (cv::Mat_<double>(3,1) << -18, 30, 200);
 
-	Model model(T, cornerPoints, pointsPerEdge, cameraMatrix, distortionCoefficients, rotationVector, translateVector);
+	Model model(/*T,*/cornerPoints, pointsPerEdge, cameraMatrix, distortionCoefficients, rotationVector, translateVector);
 
 	return model;
 }
@@ -120,15 +120,16 @@ int main(int argn, char* argv[])
 	const int VideoHeight = 480;
 	const int VideoWidth = 640;
 
-	//cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, -0.001, 0.002, 0.01, 0.03, -0.01);
-    cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, 0.0, 0.0, 0.5, 0.5, 0.5);
+	cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, -0.001, 0.002, 0.01, 0.03, -0.01);
+    //cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.001, 0.002, 0.003, 0.5, 0.5, 0.5);
+    //cv::Mat firstMovement = (cv::Mat_<double>(6,1) << 0.0, 0.0, 0.0, 2.0, 2.0, 2.0);// TODO: Why does it crash?
 
 	Model model = GetHardcodedModel();
 	//model.updatePose(firstMovement);
 
 	std::list<cv::Mat> fakeMovieScenario;
 
-    for(int i=0;i<20;i++)
+    for(int i=0;i<1000;i++)
 		fakeMovieScenario.push_back(firstMovement);
 
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
@@ -137,16 +138,27 @@ int main(int argn, char* argv[])
 
     //Model updatedModel = GetHardcodedModel();
     cv::Mat movieFrame;
+    int frameNumber = 0;
+    cv::Scalar blueColor = cv::Scalar(255, 0, 0);
+
 	movie.ReadNextFrame(movieFrame);
 	movie.ReadNextFrame(movieFrame);
 	movie.ReadNextFrame(movieFrame);
-    while(movie.ReadNextFrame(movieFrame)){
-        cv::Scalar blueColor = cv::Scalar(255, 0, 0);
+    while(movie.ReadNextFrame(movieFrame))
+    {   
+        frameNumber++;
+
+        cv::Mat cleanFrame = movieFrame.clone();
         cv::Mat prev = model.Outline(movieFrame, true, blueColor);
 		cv::imshow(currentWindowName, prev);
-        Model updatedModel = tracker.ProcessFrame(movieFrame);
-	    movieFrame = updatedModel.Outline(movieFrame, true, blueColor);
+
+        model = tracker.ProcessFrame(movieFrame);
+
+	    movieFrame = model.Outline(movieFrame, true, blueColor);
         cv::imshow(nextWindowName, movieFrame);
+        cv::Mat temp = cv::Mat::zeros(3, 1, CV_64F);
+
+        model.DrawReferencePoints(cleanFrame, temp, frameNumber);
 		cv::waitKey();
         //movieFrame = cv::Mat::zeros(VideoHeight, VideoWidth, CV_8UC3); //does not help! 
     }

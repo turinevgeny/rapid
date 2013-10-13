@@ -9,22 +9,23 @@ class Model
 {
 public:
 	Model() {}
-	Model(const cv::Mat& T,
+	Model(//const cv::Mat& T,
           const cv::Mat* cornerPoints,
           const int      pointsPerEdge,
           const cv::Mat& cameraMatrix,
           const cv::Mat& distortionCoefficients,
           const cv::Mat& rotationVector,
           const cv::Mat& translateVector);
-	Model(const cv::Mat& T,
+	Model(//const cv::Mat& T,
           const std::vector<cv::Mat> cornerPoints,
           const int      pointsPerEdge,
           const cv::Mat& cameraMatrix,
           const cv::Mat& distortionCoefficients,
           const cv::Mat& rotationVector,
           const cv::Mat& translateVector);
+    Model(Model& model);
 	~Model();
-    void            DrawReferencePoints(const cv::Mat&   source, cv::Mat& patternOrigin3D); // to draw the origin of model and the origin of pattern
+    void            DrawReferencePoints(const cv::Mat&   source, cv::Mat& patternOrigin3D, int numFrame); // to draw the origin of model and the origin of pattern
 	cv::Mat         Outline(const cv::Mat&   source,
                             const bool       isDrawControlPoints = true,
                             const cv::Scalar color = (cv::Scalar::all(255)),
@@ -32,7 +33,7 @@ public:
 	void			updatePose(const cv::Mat& rotVector, const cv::Mat& transVector); // 3d vectors
 	void			updatePose(const cv::Mat& solution);	// solution = rotation angles concat translation distances
 private:
-	cv::Mat					T;					// model coordinate system origin in camera coords
+	//cv::Mat					T;					// model coordinate system origin in camera coords
 	std::vector<cv::Mat>	cornerPoints;		// corner points in model coords
 	cv::Mat					cameraMatrix, distortionCoefficients;
 	std::list<cv::Mat>		controlPoints;		// list of control points
@@ -40,8 +41,7 @@ private:
 	int						pointsPerEdge;
 	cv::Mat					translateVector;	// is used for projection purposes
 	cv::Mat					rotationVector;		// is used for projection purposes
-private:
-	void		    RotateAndTranslate(const cv::Mat& rotationVector, const cv::Mat& translateVector);
+private:	
 	/*cv::Point2d     Project(const cv::Mat &_3DPoint,
 						   const cv::Mat &rotationVector = cv::Mat(3, 1, CV_32F, cv::Scalar::all(0)),
 						   //const cv::Mat &translateVector = (cv::Mat_<double>(3,1) << -12, 11, 70)) const;

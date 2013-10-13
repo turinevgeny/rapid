@@ -24,7 +24,7 @@ cv::FileStorage& operator<<(cv::FileStorage& out, const VideoInfo& c)
 			<< "numberOfCorners" << c.numberOfCorners
 			<< "videoPath" << c.videoPath
 			<< "calibDataPath" << c.calibDataPath
-			<< "T" << c.T
+			//<< "T" << c.T
 			<< "rotationMatrix" << c.rotationMatrix
 			<< "cornerPointsInModelCoords"
 			<< "{";
@@ -45,7 +45,7 @@ cv::FileStorage& operator>>(cv::FileStorage& in, VideoInfo& c)
 	c.numberOfCorners = (int) node["numberOfCorners"];
 	c.videoPath = (std::string) node["videoPath"];
 	c.calibDataPath = (std::string) node["calibDataPath"];
-	node["T"] >> c.T;
+	//node["T"] >> c.T;
 	node["rotationMatrix"] >> c.rotationMatrix;
 
 	delete[] c.cornerPointsInModelCoords;
@@ -80,7 +80,7 @@ void VideoInfo::MockUp()
 
 	videoPath = "../../video/test.MOV";
 	calibDataPath = "../../camera.xml";
-	T = (cv::Mat_<double>(1,3) << -15, 120, 352);
+	//T = (cv::Mat_<double>(1,3) << -15, 120, 352);
 
 	const double a = 145.0;
 	const double b = 65.0;

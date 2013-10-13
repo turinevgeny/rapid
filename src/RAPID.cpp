@@ -80,7 +80,7 @@ int main(int argn, char* argv[])
         return 1;
     }
 
-    Model model(tVec.t(), videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec); //TODO Duplicate T and TranslateVector
+    Model model(/*tVec.t(),*/ videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec); //TODO Duplicate T and TranslateVector
     RAPIDTracker tracker(model);
 
     const std::string nextWindowName = "Next";
@@ -91,13 +91,14 @@ int main(int argn, char* argv[])
 
 	while (cap.read(frame))
 	{
-        model.DrawReferencePoints(frame, patternOrigin3D);
+        cv::Mat cleanFrame = frame.clone();
 		cv::Mat prev = model.Outline(frame);
 		cv::imshow(currentWindowName, prev);
-		Model updatedModel = tracker.ProcessFrame(frame);
-		frame = updatedModel.Outline(frame);
+		model = tracker.ProcessFrame(frame);
+		frame = model.Outline(frame);
 		cv::imshow(nextWindowName, frame);
-
+        //after updating rotate and translate vectors
+        model.DrawReferencePoints(cleanFrame, patternOrigin3D, cap.get(CV_CAP_PROP_POS_FRAMES));
 		cv::waitKey();
 	}
 

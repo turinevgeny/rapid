@@ -11,10 +11,9 @@
 // To disable Canny filter for RapidTesting
 //#define ENABLE_TESTING
 
-RAPIDTracker::RAPIDTracker(const Model& _model)
-{
-	model = _model;
-}
+RAPIDTracker::RAPIDTracker(Model& _model)
+    :model(_model)
+{}
 
 cv::Mat RAPIDTracker::ExtractEdges(const cv::Mat& image) const
 {
@@ -178,7 +177,7 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint,
 //Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 {
-	cv::Mat result=frame.clone();
+	cv::Mat result = frame.clone();
 
 	std::list<cv::Mat>::iterator controlPointsIter = model.controlPoints.begin();
 	std::list<cv::Mat>::iterator companionPointsIter = model.companionPoints.begin();
@@ -218,27 +217,24 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 		    tempX = (s.x-r.x);
 		    tempY = (s.y-r.y);
 
-		    //sineAlpha   = tempY/sqrt(tempX*tempX + tempY*tempY); // (AR: Nikolay) To compare with the values ​​in GetDisplacement
-		    //cosineAlpha = tempX/sqrt(tempX*tempX + tempY*tempY); // (AR: Nikolay) To compare with the values ​​in GetDisplacement
-
 		    double x = r.x;
 		    double y = r.y;
 		    double Px = (*controlPointsIter).at<double>(0,0);
 		    double Py = (*controlPointsIter).at<double>(0,1);
 		    double Pz = (*controlPointsIter).at<double>(0,2);
 
-            modelPoints3D.push_back(cv::Point3f(Px, Py, Pz)); //(AR: Evgeniy) Check coordinates. Coordinates must be integers
+            modelPoints3D.push_back(cv::Point3f(Px, Py, Pz)); 
 
-		    double Tz = model.T.at<double>(0,2); // (AR: Nikolay) To deal with the sense of T. Understand difference between T and model.translate.
-                                                 // (AR: Nikolay) To draw reference points
+		    double Tz = model.translateVector.at<double>(2,0); 
+
 		    a = (cv::Mat_<double>(6,1) <<  -x*Py, x*Px+Pz, -Py, 1, 0,-x);
 		    b = (cv::Mat_<double>(6,1) <<  -y*Py-Pz, y*Px,  Px, 0, 1,-y);
 		    a /= Tz + Pz;
 		    b /= Tz + Pz;
 		    c = a*cosineAlpha-b*sineAlpha;
 
-		    left += c*c.t(); // (AR: Evgeniy) to see on stages
-		    right += c*l;	 // (AR: Evgeniy) to check += operation
+		    left += c*c.t(); 
+		    right += c*l;	 
 
             // why does it move so strange ?????
 		    //right-=c*abs(l);// why doesn't it move ?????????????
@@ -263,10 +259,12 @@ Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
 
     cv::Mat angle = cv::Mat(solution, cv::Range(0,3), cv::Range(0,1));
 	cv::Mat distance = cv::Mat(solution, cv::Range(3,6), cv::Range(0,1));
+    std::cout<<"--Algorithm's rotate vectors: (delta rotate) angle= "<<std::endl<<angle<<std::endl;
+    std::cout<<"--Algorithm's translate vectors: (delta translate) distance= "<<std::endl<<distance<<std::endl<<std::endl;
 
     cv::Mat rvec,tvec;
     cv::solvePnP(cv::Mat(modelPoints3D), cv::Mat(foundBoxPoints2D), model.cameraMatrix,
-        model.distortionCoefficients, rvec, tvec, false);
+                 model.distortionCoefficients, rvec, tvec, false);
     //std::cout << "---(SolvePnP) rotate vector" << std::endl << rvec << std::endl << "---(SolvePnP) translate vector=" << std::endl << tvec << std::endl;
     std::cout << "---(SolvePnP) delta rotate vector" << std::endl << rvec - model.rotationVector<< std::endl;
     std::cout << "---(SolvePnP) delta translate vector=" << std::endl << tvec - model.translateVector << std::endl << std::endl;

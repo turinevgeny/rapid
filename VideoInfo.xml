@@ -2,7 +2,7 @@
 <opencv_storage>
 <VideoInfo>
   <numberOfCorners>8</numberOfCorners>
-  <videoPath>"../../video/test.MOV"</videoPath>
+  <videoPath>"../../video/test_small_25.MOV"</videoPath>
   <calibDataPath>"../../camera.xml"</calibDataPath>
   <T type_id="opencv-matrix">
     <rows>1</rows>

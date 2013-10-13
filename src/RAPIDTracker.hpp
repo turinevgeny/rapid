@@ -11,7 +11,7 @@ enum Direction {HORIZONTAL, VERTICAL, UPWARD_DIAGONAL, DOWNWARD_DIAGONAL};
 class RAPIDTracker
 {
 public:
-	RAPIDTracker(const Model& model);
+	RAPIDTracker(Model& model);
 	virtual Model ProcessFrame(const cv::Mat& frame);
 private:
 	Model		model;
