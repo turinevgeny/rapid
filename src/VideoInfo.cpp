@@ -4,6 +4,8 @@
 
 #include "VideoInfo.hpp"
 
+using namespace cv;
+
 std::string VideoInfo::IntToString(int i)
 {
 	std::stringstream number;
@@ -11,7 +13,7 @@ std::string VideoInfo::IntToString(int i)
 	return number.str();
 }
 
-cv::FileStorage& operator<<(cv::FileStorage& out, const VideoInfo& c) 
+FileStorage& operator<<(FileStorage& out, const VideoInfo& c) 
 {
 	if (!c.IsInitialized())
 	{
@@ -24,7 +26,6 @@ cv::FileStorage& operator<<(cv::FileStorage& out, const VideoInfo& c)
 			<< "numberOfCorners" << c.numberOfCorners
 			<< "videoPath" << c.videoPath
 			<< "calibDataPath" << c.calibDataPath
-			//<< "T" << c.T
 			<< "rotationMatrix" << c.rotationMatrix
 			<< "cornerPointsInModelCoords"
 			<< "{";
@@ -39,19 +40,18 @@ cv::FileStorage& operator<<(cv::FileStorage& out, const VideoInfo& c)
 	return out;
 }
 
-cv::FileStorage& operator>>(cv::FileStorage& in, VideoInfo& c)
+FileStorage& operator>>(FileStorage& in, VideoInfo& c)
 {
-	cv::FileNode node = in["VideoInfo"];
+	FileNode node = in["VideoInfo"];
 	c.numberOfCorners = (int) node["numberOfCorners"];
 	c.videoPath = (std::string) node["videoPath"];
 	c.calibDataPath = (std::string) node["calibDataPath"];
-	//node["T"] >> c.T;
 	node["rotationMatrix"] >> c.rotationMatrix;
 
 	delete[] c.cornerPointsInModelCoords;
-	c.cornerPointsInModelCoords = new cv::Mat[c.numberOfCorners];
+	c.cornerPointsInModelCoords = new Mat[c.numberOfCorners];
 
-	cv::FileNode cornerPointsInModelCoordsNode = node["cornerPointsInModelCoords"];
+	FileNode cornerPointsInModelCoordsNode = node["cornerPointsInModelCoords"];
 	for (int i = 0; i < c.numberOfCorners; i++)
 	{
 		std::string nodeName =  "cornerPointsInModelCoords" + c.IntToString(i);
@@ -61,9 +61,9 @@ cv::FileStorage& operator>>(cv::FileStorage& in, VideoInfo& c)
 	return in;
 }
 
-cv::Mat* VideoInfo::GetCornerPoints()
+Mat* VideoInfo::GetCornerPoints()
 {
-	cornerPoints = new cv::Mat[numberOfCorners];
+	cornerPoints = new Mat[numberOfCorners];
 
 	for (int i = 0; i < numberOfCorners; ++i)
 	{
@@ -80,7 +80,6 @@ void VideoInfo::MockUp()
 
 	videoPath = "../../video/test.MOV";
 	calibDataPath = "../../camera.xml";
-	//T = (cv::Mat_<double>(1,3) << -15, 120, 352);
 
 	const double a = 145.0;
 	const double b = 65.0;
@@ -88,20 +87,20 @@ void VideoInfo::MockUp()
 
 	const double alpha = CV_PI/2 - acos(100/a);
 
-	rotationMatrix = (cv::Mat_<double>(3,3) <<  cos(alpha),  0, sin(alpha),
+	rotationMatrix = (Mat_<double>(3,3) <<  cos(alpha),  0, sin(alpha),
 												0,           1, 0,
 												-sin(alpha), 0, cos(alpha));
 
-	cornerPointsInModelCoords = new cv::Mat[numberOfCorners];
+	cornerPointsInModelCoords = new Mat[numberOfCorners];
 
-	cornerPointsInModelCoords[0] = (cv::Mat_<double>(1,3) << 0,  0, 0);
-	cornerPointsInModelCoords[1] = (cv::Mat_<double>(1,3) << b,  0, 0);
-	cornerPointsInModelCoords[2] = (cv::Mat_<double>(1,3) << b,  0, a);
-	cornerPointsInModelCoords[3] = (cv::Mat_<double>(1,3) << 0,  0, a);
-	cornerPointsInModelCoords[4] = (cv::Mat_<double>(1,3) << 0, -c, 0);
-	cornerPointsInModelCoords[5] = (cv::Mat_<double>(1,3) << b, -c, 0);
-	cornerPointsInModelCoords[6] = (cv::Mat_<double>(1,3) << b, -c, a);
-	cornerPointsInModelCoords[7] = (cv::Mat_<double>(1,3) << 0, -c, a);
+	cornerPointsInModelCoords[0] = (Mat_<double>(1,3) << 0,  0, 0);
+	cornerPointsInModelCoords[1] = (Mat_<double>(1,3) << b,  0, 0);
+	cornerPointsInModelCoords[2] = (Mat_<double>(1,3) << b,  0, a);
+	cornerPointsInModelCoords[3] = (Mat_<double>(1,3) << 0,  0, a);
+	cornerPointsInModelCoords[4] = (Mat_<double>(1,3) << 0, -c, 0);
+	cornerPointsInModelCoords[5] = (Mat_<double>(1,3) << b, -c, 0);
+	cornerPointsInModelCoords[6] = (Mat_<double>(1,3) << b, -c, a);
+	cornerPointsInModelCoords[7] = (Mat_<double>(1,3) << 0, -c, a);
 }
 
 VideoInfo::~VideoInfo()

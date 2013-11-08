@@ -14,6 +14,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using namespace cv;
 
 void help()
 {
@@ -35,25 +36,25 @@ bool ValidateAndInterpretePrameters(const int argn,
                                     const char* argv[],
                                     int& firstFrame,
                                     VideoInfo& videoInfo,
-                                    cv::VideoCapture& cap,
-                                    cv::Mat& cameraMatrix,
-                                    cv::Mat& distortionCoefficients);
+                                    VideoCapture& cap,
+                                    Mat& cameraMatrix,
+                                    Mat& distortionCoefficients);
 
 // false if the process has failed
-bool GetRotationAndTranslationVector(const cv::Mat& view,
-                                     const cv::Mat& cameraMatrix,
-                                     const cv::Mat& distortionCoefficients,
-                                     cv::Mat& rVector,
-                                     cv::Mat& tVector,
-                                     cv::Mat& patternOrigin3D);
+bool GetRotationAndTranslationVector(const Mat& view,
+                                     const Mat& cameraMatrix,
+                                     const Mat& distortionCoefficients,
+                                     Mat& rVector,
+                                     Mat& tVector,
+                                     Mat& patternOrigin3D);
 
 int main(int argn, char* argv[])
 {
     int firstFrame;
     VideoInfo videoInfo;
-    cv::VideoCapture cap;
-    cv::Mat Camera_Matrix;
-    cv::Mat Distortion_Coefficients;
+    VideoCapture cap;
+    Mat Camera_Matrix;
+    Mat Distortion_Coefficients;
 
     if(!ValidateAndInterpretePrameters(
         argn,
@@ -66,12 +67,12 @@ int main(int argn, char* argv[])
         ))
         return 1;
     
-    cv::Mat frame;
+    Mat frame;
     //for ../video/../test.mov firstFrame = 78
     for(int i = 0; i < firstFrame; i++)
         cap.read(frame);
 
-    cv::Mat rVec, tVec, patternOrigin3D;
+    Mat rVec, tVec, patternOrigin3D;
     if (!GetRotationAndTranslationVector(frame, Camera_Matrix, Distortion_Coefficients, rVec, tVec, patternOrigin3D))
     {
         cerr << endl << "Can't find the calibration pattern."<< endl
@@ -80,43 +81,43 @@ int main(int argn, char* argv[])
         return 1;
     }
 
-    Model model(/*tVec.t(),*/ videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec); //TODO Duplicate T and TranslateVector
+    Model model(videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec);
     RAPIDTracker tracker(model);
 
     const std::string nextWindowName = "Next";
     const std::string currentWindowName = "Current";
 
-    cv::namedWindow(nextWindowName, CV_WINDOW_AUTOSIZE);
-    cv::namedWindow(currentWindowName, CV_WINDOW_AUTOSIZE);
+    namedWindow(nextWindowName, CV_WINDOW_AUTOSIZE);
+    namedWindow(currentWindowName, CV_WINDOW_AUTOSIZE);
 
 	while (cap.read(frame))
 	{
-        cv::Mat cleanFrame = frame.clone();
-		cv::Mat prev = model.Outline(frame);
-		cv::imshow(currentWindowName, prev);
+        Mat cleanFrame = frame.clone();
+		Mat prev = model.Outline(frame);
+		imshow(currentWindowName, prev);
 		model = tracker.ProcessFrame(frame);
 		frame = model.Outline(frame);
-		cv::imshow(nextWindowName, frame);
+		imshow(nextWindowName, frame);
         //after updating rotate and translate vectors
         model.DrawReferencePoints(cleanFrame, patternOrigin3D, cap.get(CV_CAP_PROP_POS_FRAMES));
-		cv::waitKey();
+		waitKey();
 	}
 
 	return 0;
 }
 
-bool GetRotationAndTranslationVector(const cv::Mat& circlesImage,
-                                     const cv::Mat& Camera_Matrix,
-                                     const cv::Mat& Distortion_Coefficients,
-                                     cv::Mat& rVector,
-                                     cv::Mat& tVector,
-                                     cv::Mat& patternOrigin3D)
+bool GetRotationAndTranslationVector(const Mat& circlesImage,
+                                     const Mat& Camera_Matrix,
+                                     const Mat& Distortion_Coefficients,
+                                     Mat& rVector,
+                                     Mat& tVector,
+                                     Mat& patternOrigin3D)
 {
-    std::vector<cv::Point2f> foundBoardCorners;
-    std::vector<cv::Point3f> boardPoints;
+    std::vector<Point2f> foundBoardCorners;
+    std::vector<Point3f> boardPoints;
     float squareSize = 17.7;
-    cv::Size boardSize(4, 11);
-    cv::Mat rvec(3, 1, CV_64F), tvec(3, 1, CV_64F);
+    Size boardSize(4, 11);
+    Mat rvec(3, 1, CV_64F), tvec(3, 1, CV_64F);
     bool found;
 
     // X, Y, Z - axis offset from the center of the reference circle
@@ -128,20 +129,20 @@ bool GetRotationAndTranslationVector(const cv::Mat& circlesImage,
     //calcBoardCornerPositions circles
     for( int i = 0; i < boardSize.height; i++ )
         for( int j = 0; j < boardSize.width; j++ )
-            boardPoints.push_back(cv::Point3f(float((2*j + i % 2)*(-squareSize) + offsetX), offsetY, float(i*squareSize) + offsetZ));
+            boardPoints.push_back(Point3f(float((2*j + i % 2)*(-squareSize) + offsetX), offsetY, float(i*squareSize) + offsetZ));
 
-    patternOrigin3D = (cv::Mat_<double>(3,1) << boardPoints[40].x, boardPoints[40].y, boardPoints[40].z);
+    patternOrigin3D = (Mat_<double>(3,1) << boardPoints[40].x, boardPoints[40].y, boardPoints[40].z);
     cout << "boardOrigin" << endl << patternOrigin3D << endl;
     cout << "boardPoints" << endl << boardPoints << endl;
-    found = cv::findCirclesGrid(circlesImage, boardSize, foundBoardCorners, 2);
+    found = findCirclesGrid(circlesImage, boardSize, foundBoardCorners, 2);
 
-    cv::Mat view = circlesImage.clone();
+    Mat view = circlesImage.clone();
 
     if (found) 
     {
         //drawChessboardCorners( view, boardSize, Mat(foundBoardCorners), found );
         cout << "found circles Grid!" << endl;
-        cv::solvePnP(cv::Mat(boardPoints), cv::Mat(foundBoardCorners), Camera_Matrix,
+        solvePnP(Mat(boardPoints), Mat(foundBoardCorners), Camera_Matrix,
                      Distortion_Coefficients, rvec, tvec, false);
         cout << "Rotate vector" << endl << rvec << endl << "Translate vector=" << endl << tvec << endl;
     }
@@ -157,9 +158,9 @@ bool ValidateAndInterpretePrameters(const int argn,
                                     const char* argv[],
                                     int& firstFrame,
                                     VideoInfo& videoInfo,
-                                    cv::VideoCapture& cap,
-                                    cv::Mat& cameraMatrix,
-                                    cv::Mat& distortionCoefficients)
+                                    VideoCapture& cap,
+                                    Mat& cameraMatrix,
+                                    Mat& distortionCoefficients)
 {
     // checking number of the command line arguments
     if (argn < 3)
@@ -180,7 +181,7 @@ bool ValidateAndInterpretePrameters(const int argn,
     }
 
     // opening VideoInfo storage
-    cv::FileStorage videoInfoStorage(videoInfoXmlPath, cv::FileStorage::READ);
+    FileStorage videoInfoStorage(videoInfoXmlPath, FileStorage::READ);
     if (!videoInfoStorage.isOpened())
     {
         cerr << "Couldn't open " << videoInfoXmlPath << " file." << endl;
@@ -205,7 +206,7 @@ bool ValidateAndInterpretePrameters(const int argn,
     }
 
     // trying to grab a frame from the video file
-    cv::Mat frame;
+    Mat frame;
     if (!cap.read(frame))   
     {
         help();
@@ -216,8 +217,8 @@ bool ValidateAndInterpretePrameters(const int argn,
     cap.set(CV_CAP_PROP_POS_AVI_RATIO, 0.0);
 
     // reading calibration data
-    cv::FileStorage cameraData;
-    cameraData.open(videoInfo.GetCalibDataPath(), cv::FileStorage::READ);    
+    FileStorage cameraData;
+    cameraData.open(videoInfo.GetCalibDataPath(), FileStorage::READ);    
     if (!cameraData.isOpened())
     {
         cerr << "Failed to open " << videoInfo.GetCalibDataPath() << endl;

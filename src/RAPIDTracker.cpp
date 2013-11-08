@@ -11,31 +11,32 @@
 // To disable Canny filter for RapidTesting
 //#define ENABLE_TESTING
 
+using std::cout;
+using std::endl;
+using namespace cv;
+
 RAPIDTracker::RAPIDTracker(Model& _model)
     :model(_model)
 {}
 
-cv::Mat RAPIDTracker::ExtractEdges(const cv::Mat& image) const
+Mat RAPIDTracker::ExtractEdges(const Mat& image) const
 {
-	cv::Mat edges;
-	cv::cvtColor(image, edges, CV_BGR2GRAY); //TODO: Is it necessary for RapidTesting?
+	Mat edges;
+	cvtColor(image, edges, CV_BGR2GRAY); //TODO: Is it necessary for RapidTesting?
 
 #ifndef ENABLE_TESTING
-	cv::GaussianBlur(edges, edges, cv::Size(7,7), 1.5, 1.5);
-	cv::Canny(edges, edges, 20, 100, 3);
+	GaussianBlur(edges, edges, Size(7,7), 1.5, 1.5);
+	Canny(edges, edges, 20, 100, 3);
 #endif
 
 	return edges;
 }
 
-bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint,
-                                   cv::Point2d companionPoint, 
-                                   const cv::Mat& edges, 
-                                   cv::Point2d& foundPoint, 
-                                   cv::Point2d& foundPoint2, 
-                                   double& length,
-                                   double& sineAlpha,
-                                   double& cosineAlpha)
+bool RAPIDTracker::FindPoints(Point2d controlPoint,
+                              Point2d companionPoint, 
+                              const Mat& edges, 
+                              Point2d& foundPoint, 
+                              Point2d& foundPoint2)
 {
 	double kx=1/model.cameraMatrix.at<double>(0,0);
 	double ky=1/model.cameraMatrix.at<double>(1,1);
@@ -45,14 +46,8 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint,
 	double tempX=(companionPoint.x-controlPoint.x);
 	double tempY=(companionPoint.y-controlPoint.y);
 
-//	if (tempY < 0)
-//	{
-//		tempX *= -1;
-//		tempY *= -1;
-//	}
-
-	sineAlpha    = tempY/sqrt(tempX*tempX + tempY*tempY);
-	cosineAlpha  = tempX/sqrt(tempX*tempX + tempY*tempY);
+	double sineAlpha    = tempY/sqrt(tempX*tempX + tempY*tempY);
+	double cosineAlpha  = tempX/sqrt(tempX*tempX + tempY*tempY);
 
 	double tangentAlpha = sineAlpha/cosineAlpha;
 
@@ -116,165 +111,108 @@ bool RAPIDTracker::GetDisplacement(cv::Point2d controlPoint,
 
 	if (diff1==255) 
     {
-		foundPoint = cv::Point2d(currX1, currY1);
-         //foundPoint2 = cv::Point2d(currX2, currY2);
+		foundPoint = Point2d(currX1, currY1);
+         //foundPoint2 = Point2d(currX2, currY2);
         if ((diff2==255) && (num == 0))
         { 
-            std::cout<<"Warning: The found point and the control point are the same! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<std::endl;
+            cout<<"Warning: The found point and the control point are the same! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
         }
         if ((diff2==255) && (num > 0))
         {
-            foundPoint2 = cv::Point2d(currX2, currY2);
-            std::cout<<"Warning: Found two points! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<std::endl;
-            std::cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<std::endl;
-            std::cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<std::endl;
+            foundPoint2 = Point2d(currX2, currY2);
+            cout<<"Warning: Found two points! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
+            cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<endl;
+            cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<endl;
         }
     }
 	else 
     {
         if(diff2==255)
         {
-		    foundPoint = cv::Point2d(currX2, currY2);
-            //foundPoint2 = cv::Point2d(currX1, currY1);
+		    foundPoint = Point2d(currX2, currY2);
+            //foundPoint2 = Point2d(currX1, currY1);
         }
         else
         {
-            foundPoint = cv::Point2d(currX1, currY1);
-            foundPoint2 = cv::Point2d(currX2, currY2);
-            std::cout<<"Warning: Point isn't found for control point( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<std::endl;
-            std::cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<std::endl;
-            std::cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<std::endl;
+            foundPoint = Point2d(currX1, currY1);
+            foundPoint2 = Point2d(currX2, currY2);
+            cout<<"Warning: Point isn't found for control point( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
+            cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<endl;
+            cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<endl;
             return false;
         }
     }
 
-    //std::cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
-    //std::cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
+    //cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
+    //cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
 
     //Displays how many iterations are searched foundPoints
-	//std::cout<<"num  "<<num<<std::endl;
+	//cout<<"num  "<<num<<endl;
 
-    //std::cout<<"foundDirection  "<<foundDirection<<std::endl;
-
-	switch(foundDirection)
-	{
-		case DOWNWARD_DIAGONAL:
-			length = num*(ky*cosineAlpha+kx*sineAlpha);
-			break;
-		case UPWARD_DIAGONAL:
-			length = num*(ky*cosineAlpha-kx*sineAlpha);
-			break;
-		case VERTICAL:
-			length = num*ky*cosineAlpha;
-			break;
-		case HORIZONTAL:
-			length = -num*kx*sineAlpha;
-			break;
-	}
+    //cout<<"foundDirection  "<<foundDirection<<endl;
 	return true;
 }
 
-//Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
-Model RAPIDTracker::ProcessFrame(const cv::Mat& frame)
+Model RAPIDTracker::ProcessFrame(const Mat& frame)
 {
-	cv::Mat result = frame.clone();
+	Mat result = frame.clone();
 
-	std::list<cv::Mat>::iterator controlPointsIter = model.controlPoints.begin();
-	std::list<cv::Mat>::iterator companionPointsIter = model.companionPoints.begin();
+	std::list<Mat>::iterator controlPointsIter = model.controlPoints.begin();
+	std::list<Mat>::iterator companionPointsIter = model.companionPoints.begin();
 
-	cv::Mat edges = ExtractEdges(result); 
+	Mat edges = ExtractEdges(result); 
 
 #ifndef ENABLE_TESTING
-	cv::namedWindow("canny", CV_WINDOW_AUTOSIZE);
+	namedWindow("canny", CV_WINDOW_AUTOSIZE);
 	imshow("canny",edges);
 #endif
 
-	cv::Point2d foundPoint,foundPoint2;
-	double l;
-	double tempX,tempY;
-	double sineAlpha,cosineAlpha;
+	Point2d foundPoint,foundPoint2;
 
-	cv::Mat a,b,c;
-	cv::Mat right = cv::Mat::zeros(6, 1, CV_64F);
-	cv::Mat left  = cv::Mat::zeros(6, 6, CV_64F);
-
-    std::vector<cv::Point2d> foundBoxPoints2D;
-    std::vector<cv::Point3d> modelPoints3D;
+    std::vector<Point2d> foundBoxPoints2D;
+    std::vector<Point3d> modelPoints3D;
 
 	while (controlPointsIter != model.controlPoints.end())
 	{
-		cv::Point2d r = model.Project(/*model.T+*/*controlPointsIter);
-		cv::Point2d s = model.Project(/*model.T+*/*companionPointsIter);
-        if (GetDisplacement(r, s, edges, foundPoint, foundPoint2, l, sineAlpha, cosineAlpha))
+		Point2d r = model.Project(*controlPointsIter);
+		Point2d s = model.Project(*companionPointsIter);
+        if (FindPoints(r, s, edges, foundPoint, foundPoint2))
         {
             foundBoxPoints2D.push_back(foundPoint);
-		    std::cout << "length:" << l << std::endl;
 
-		    cv::circle(result, foundPoint, 4, cv::Scalar(0,0,255));
-            cv::circle(result, foundPoint2, 4, cv::Scalar(255,0,255));
-		    cv::line(result, foundPoint, r, cv::Scalar(0,255,0), 1, 8);
+		    circle(result, foundPoint, 4, Scalar(0,0,255));
+            circle(result, foundPoint2, 4, Scalar(255,0,255));
+		    line(result, foundPoint, r, Scalar(0,255,0), 1, 8);
 
-		    tempX = (s.x-r.x);
-		    tempY = (s.y-r.y);
-
-		    double x = r.x;
-		    double y = r.y;
 		    double Px = (*controlPointsIter).at<double>(0,0);
 		    double Py = (*controlPointsIter).at<double>(0,1);
 		    double Pz = (*controlPointsIter).at<double>(0,2);
 
-            modelPoints3D.push_back(cv::Point3f(Px, Py, Pz)); 
-
-		    double Tz = model.translateVector.at<double>(2,0); 
-
-		    a = (cv::Mat_<double>(6,1) <<  -x*Py, x*Px+Pz, -Py, 1, 0,-x);
-		    b = (cv::Mat_<double>(6,1) <<  -y*Py-Pz, y*Px,  Px, 0, 1,-y);
-		    a /= Tz + Pz;
-		    b /= Tz + Pz;
-		    c = a*cosineAlpha-b*sineAlpha;
-
-		    left += c*c.t(); 
-		    right += c*l;	 
-
-            // why does it move so strange ?????
-		    //right-=c*abs(l);// why doesn't it move ?????????????
+            modelPoints3D.push_back(Point3f(Px, Py, Pz)); 
         }
         else 
         {
-            cv::circle(result, foundPoint, 1, cv::Scalar(255,0,255));
-            cv::circle(result, foundPoint2, 1, cv::Scalar(255,0,255));
-		    cv::line(result, foundPoint, foundPoint2, cv::Scalar(0,255,0), 1, 8);
-            cv::line(result, foundPoint, r, cv::Scalar(255,0,0), 1, 8);
+            circle(result, foundPoint, 1, Scalar(255,0,255));
+            circle(result, foundPoint2, 1, Scalar(255,0,255));
+		    line(result, foundPoint, foundPoint2, Scalar(0,255,0), 1, 8);
+            line(result, foundPoint, r, Scalar(255,0,0), 1, 8);
         }
 
 		controlPointsIter++;
 		companionPointsIter++;
 	}
-	cv::Mat solution;
-	cv::solve(left,right,solution);
-    std::cout << std::endl << "Algoritm solution " << solution << std::endl;
 
-    std::cout << std::endl << "right " << right << std::endl << "; left "<< left*solution << std::endl; 
-    //model.updatePose(solution);
-
-    cv::Mat angle = cv::Mat(solution, cv::Range(0,3), cv::Range(0,1));
-	cv::Mat distance = cv::Mat(solution, cv::Range(3,6), cv::Range(0,1));
-    std::cout<<"--Algorithm's rotate vectors: (delta rotate) angle= "<<std::endl<<angle<<std::endl;
-    std::cout<<"--Algorithm's translate vectors: (delta translate) distance= "<<std::endl<<distance<<std::endl<<std::endl;
-
-    cv::Mat rvec,tvec;
-    cv::solvePnP(cv::Mat(modelPoints3D), cv::Mat(foundBoxPoints2D), model.cameraMatrix,
+	Mat rvec,tvec;
+    solvePnP(Mat(modelPoints3D), Mat(foundBoxPoints2D), model.cameraMatrix,
                  model.distortionCoefficients, rvec, tvec, false);
-    //std::cout << "---(SolvePnP) rotate vector" << std::endl << rvec << std::endl << "---(SolvePnP) translate vector=" << std::endl << tvec << std::endl;
-    std::cout << "---(SolvePnP) delta rotate vector" << std::endl << rvec - model.rotationVector<< std::endl;
-    std::cout << "---(SolvePnP) delta translate vector=" << std::endl << tvec - model.translateVector << std::endl << std::endl;
+    //cout << "---(SolvePnP) rotate vector" << endl << rvec << endl << "---(SolvePnP) translate vector=" << endl << tvec << endl;
+    cout << "---(SolvePnP) delta rotate vector" << endl << rvec - model.rotationVector<< endl;
+    cout << "---(SolvePnP) delta translate vector=" << endl << tvec - model.translateVector << endl << endl;
     
-    std::cout << "---(Error) rotate vector" << std::endl << abs(rvec - model.rotationVector - angle) << std::endl;
-    std::cout << "---(Error) translate vector=" << std::endl << abs(tvec - model.translateVector - distance) << std::endl << std::endl;
     model.updatePose(rvec - model.rotationVector, tvec - model.translateVector);
 
-	cv::namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);
-	cv::imshow("Current: foundPoints", result);
+	namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);
+	imshow("Current: foundPoints", result);
 
  	return model;
 }

@@ -17,7 +17,6 @@ public:
 
 	// getters
 	int GetNumberOfCorners() const { return numberOfCorners; }
-	//cv::Mat GetModelCoordsOrigin() const { return T; }
 
 	bool IsInitialized() const { return !(cornerPointsInModelCoords == NULL); }
 	// Fills the class fields basing on /new1.MOV on Dropbox
@@ -33,7 +32,6 @@ private:
 	// Serializable fields
 	std::string videoPath;
 	std::string calibDataPath;
-	//cv::Mat T;
 	cv::Mat rotationMatrix;
 	cv::Mat* cornerPointsInModelCoords;
 	int numberOfCorners;

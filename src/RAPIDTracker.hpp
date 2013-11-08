@@ -17,14 +17,11 @@ private:
 	Model		model;
 private:
 	cv::Mat		ExtractEdges(const cv::Mat& image) const;
-	bool		GetDisplacement(cv::Point2d controlPoint, 
-                                cv::Point2d companionPoint, 
-                                const cv::Mat& edges, 
-                                cv::Point2d& foundPoint, 
-                                cv::Point2d& foundPoint2, 
-                                double& length,
-                                double& sineAlpha,
-                                double& cosineAlpha);
+	bool		FindPoints(cv::Point2d controlPoint, 
+                           cv::Point2d companionPoint, 
+                           const cv::Mat& edges, 
+                           cv::Point2d& foundPoint, 
+                           cv::Point2d& foundPoint2);
 };
 
 #endif
