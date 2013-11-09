@@ -8,9 +8,6 @@
 
 #include "RAPIDTracker.hpp"
 
-// To disable Canny filter for RapidTesting
-//#define ENABLE_TESTING
-
 using std::cout;
 using std::endl;
 using namespace cv;
@@ -22,12 +19,13 @@ RAPIDTracker::RAPIDTracker(Model& _model)
 Mat RAPIDTracker::ExtractEdges(const Mat& image) const
 {
 	Mat edges;
-	cvtColor(image, edges, CV_BGR2GRAY); //TODO: Is it necessary for RapidTesting?
+	cvtColor(image, edges, CV_BGR2GRAY); //TODO: Is it necessary for RapidTesting? - yes
 
-#ifndef ENABLE_TESTING
 	GaussianBlur(edges, edges, Size(7,7), 1.5, 1.5);
 	Canny(edges, edges, 20, 100, 3);
-#endif
+
+	namedWindow("canny", CV_WINDOW_AUTOSIZE);
+	imshow("canny",edges);
 
 	return edges;
 }
@@ -156,20 +154,14 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
 Model RAPIDTracker::ProcessFrame(const Mat& frame)
 {
 	Mat result = frame.clone();
+	Mat edges = ExtractEdges(result);
+
+	Point2d foundPoint,foundPoint2;
 
 	std::list<Mat>::iterator controlPointsIter = model.controlPoints.begin();
 	std::list<Mat>::iterator companionPointsIter = model.companionPoints.begin();
 
-	Mat edges = ExtractEdges(result); 
-
-#ifndef ENABLE_TESTING
-	namedWindow("canny", CV_WINDOW_AUTOSIZE);
-	imshow("canny",edges);
-#endif
-
-	Point2d foundPoint,foundPoint2;
-
-    std::vector<Point2d> foundBoxPoints2D;
+	std::vector<Point2d> foundBoxPoints2D;
     std::vector<Point3d> modelPoints3D;
 
 	while (controlPointsIter != model.controlPoints.end())

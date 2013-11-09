@@ -16,7 +16,7 @@ public:
 private:
 	Model		model;
 private:
-	cv::Mat		ExtractEdges(const cv::Mat& image) const;
+	virtual cv::Mat		ExtractEdges(const cv::Mat& image) const;
 	bool		FindPoints(cv::Point2d controlPoint, 
                            cv::Point2d companionPoint, 
                            const cv::Mat& edges, 

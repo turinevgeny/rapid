@@ -2,6 +2,7 @@
 #include <list>
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 // Model traits and its handling methods
@@ -52,6 +53,19 @@ Model GetHardcodedModel()
 
 	return model;
 }
+
+class RAPIDTestingTracker : public RAPIDTracker
+{
+public:
+	RAPIDTestingTracker(Model& model) : RAPIDTracker(model) { }
+
+	virtual cv::Mat	ExtractEdges(const cv::Mat& image) const
+	{
+		Mat edges;
+		cvtColor(image, edges, CV_BGR2GRAY);
+		return edges;
+	}
+};
 
 class FakeMovie
 {
@@ -133,7 +147,7 @@ int main(int argn, char* argv[])
 
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
 	//movie.Play();
-    RAPIDTracker tracker(model);
+    RAPIDTestingTracker tracker(model);
 
     Mat movieFrame;
     int frameNumber = 0;
