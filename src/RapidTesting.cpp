@@ -88,7 +88,7 @@ Model GetHardcodedModel()
 		(Mat_<double>(1,3) << 0, -c, a)*rotationMatrix,	// top rear point on the left side
 	};
 
-	const int     pointsPerEdge = 3;
+	const int pointsPerEdge = 5;
 	const Mat cameraMatrix = (Mat_<double>(3,3)	<<
 		679.3132512424555, 0, 319.5,
 		0, 679.5002034640837, 239.5,
@@ -199,7 +199,7 @@ int main(int argn, char* argv[])
         Mat prev = model.Outline(movieFrame, true, blueColor);
 		imshow(currentWindowName, prev);
 
-        model = tracker.ProcessFrame(movieFrame);
+        model = tracker.ProcessFrame(movieFrame, 2);
 
 	    movieFrame = model.Outline(movieFrame, true, blueColor, true);
         imshow(nextWindowName, movieFrame);

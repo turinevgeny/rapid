@@ -13,6 +13,7 @@ class RAPIDTracker
 public:
 	RAPIDTracker(Model& model);
 	virtual Model ProcessFrame(const cv::Mat& frame);
+	virtual Model ProcessFrame(const cv::Mat& frame, int iterations);
 private:
 	Model		model;
 private:

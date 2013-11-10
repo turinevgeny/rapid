@@ -209,3 +209,12 @@ Model RAPIDTracker::ProcessFrame(const Mat& frame)
  	return model;
 }
 
+Model RAPIDTracker::ProcessFrame(const cv::Mat& frame, int iterations)
+{
+	for(int i = 0; i < iterations; i++)
+	{
+		ProcessFrame(frame);
+	}
+
+	return model;
+}

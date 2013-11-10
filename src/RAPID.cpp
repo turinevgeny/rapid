@@ -41,12 +41,12 @@ bool ValidateAndInterpretePrameters(const int argn,
                                     Mat& distortionCoefficients);
 
 // false if the process has failed
-bool GetRotationAndTranslationVector(const Mat& view,
-                                     const Mat& cameraMatrix,
-                                     const Mat& distortionCoefficients,
-                                     Mat& rVector,
-                                     Mat& tVector,
-                                     Mat& patternOrigin3D);
+bool EstimateInititalPose(const Mat& view,
+                          const Mat& cameraMatrix,
+                          const Mat& distortionCoefficients,
+                          Mat& rVector,
+                          Mat& tVector,
+                          Mat& patternOrigin3D);
 
 int main(int argn, char* argv[])
 {
@@ -73,7 +73,7 @@ int main(int argn, char* argv[])
         cap.read(frame);
 
     Mat rVec, tVec, patternOrigin3D;
-    if (!GetRotationAndTranslationVector(frame, Camera_Matrix, Distortion_Coefficients, rVec, tVec, patternOrigin3D))
+    if (!EstimateInititalPose(frame, Camera_Matrix, Distortion_Coefficients, rVec, tVec, patternOrigin3D))
     {
         cerr << endl << "Can't find the calibration pattern."<< endl
              << " Troubleshooting: change numberOfFirstFrame or the input video" << endl;
@@ -81,7 +81,8 @@ int main(int argn, char* argv[])
         return 1;
     }
 
-    Model model(videoInfo.GetCornerPoints(), 3, Camera_Matrix, Distortion_Coefficients, rVec, tVec);
+	const int PointsPerEdge = 5;
+    Model model(videoInfo.GetCornerPoints(), PointsPerEdge, Camera_Matrix, Distortion_Coefficients, rVec, tVec);
     RAPIDTracker tracker(model);
 
     const std::string nextWindowName = "Next";
@@ -95,7 +96,7 @@ int main(int argn, char* argv[])
         Mat cleanFrame = frame.clone();
 		Mat prev = model.Outline(frame);
 		imshow(currentWindowName, prev);
-		model = tracker.ProcessFrame(frame);
+		model = tracker.ProcessFrame(frame, 2);
 		frame = model.Outline(frame);
 		imshow(nextWindowName, frame);
         //after updating rotate and translate vectors
@@ -106,7 +107,7 @@ int main(int argn, char* argv[])
 	return 0;
 }
 
-bool GetRotationAndTranslationVector(const Mat& circlesImage,
+bool EstimateInititalPose(const Mat& circlesImage,
                                      const Mat& Camera_Matrix,
                                      const Mat& Distortion_Coefficients,
                                      Mat& rVector,

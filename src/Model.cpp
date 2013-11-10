@@ -222,7 +222,7 @@ Mat Model::Outline(const Mat&   source,
 // adds control points located on i-j edge
 void Model::AddControlPointsFromTheEdge(int i, int j)
 {
-    const double offset = 0.3;
+    const double offset = 0.15;
 	const double companionPointsOffset = 0.3;
 
 	const Mat direction = cornerPoints[j] - cornerPoints[i];
