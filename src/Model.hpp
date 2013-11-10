@@ -39,10 +39,10 @@ private:
 	int						pointsPerEdge;
 	cv::Mat					translateVector;	// is used for projection purposes
 	cv::Mat					rotationVector;		// is used for projection purposes
-private:
+protected:
 	cv::Point2d     Project(const cv::Mat& Point3d) const;
     cv::Point2d     ManualProject(const cv::Mat& Point3d) const;
-	void			SetControlPoints();						// fills control points list with points evenly located on the edges
+	virtual void	SetControlPoints();						// fills control points list with points evenly located on the edges
 	void            AddControlPointsFromTheEdge(int i, int j);
 
 	friend class RAPIDTracker;

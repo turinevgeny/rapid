@@ -223,37 +223,35 @@ Mat Model::Outline(const Mat&   source,
 void Model::AddControlPointsFromTheEdge(int i, int j)
 {
     const double offset = 0.3;
-
 	const double companionPointsOffset = 0.3;
 
-	const Mat direction = cornerPoints[i] - cornerPoints[j];
+	const Mat direction = cornerPoints[j] - cornerPoints[i];
 
     Mat p, s;
 
-    p = cornerPoints[i] - direction*offset;
+    p = cornerPoints[i] + direction*offset;
     controlPoints.push_back(p);
 	p.release();
 
-	s = cornerPoints[i] - direction*companionPointsOffset*2;
+	s = cornerPoints[i] + direction*companionPointsOffset*2;
 	companionPoints.push_back(s);
 	s.release();
 	
-
-    p = cornerPoints[i] - direction*(1 - offset);
+    p = cornerPoints[i] + direction*(1 - offset);
     controlPoints.push_back(p);
 	p.release();
 
-	s = cornerPoints[i] - direction*(1-companionPointsOffset*2);
+	s = cornerPoints[i] + direction*(1-companionPointsOffset*2);
 	companionPoints.push_back(s);
 	s.release();
 
     for (int k = 1; k < pointsPerEdge-1; k++)
 	{
-		p = cornerPoints[i] - direction*(k / (double) (pointsPerEdge-1));
+		p = cornerPoints[i] + direction*(k / (double) (pointsPerEdge-1));
 		controlPoints.push_back(p);
 		p.release();
 
-		s = cornerPoints[i] - direction*(k / (double) (pointsPerEdge-1) + companionPointsOffset);
+		s = cornerPoints[i] + direction*(k / (double) (pointsPerEdge-1) + companionPointsOffset);
 		companionPoints.push_back(s);
 		s.release();
 	}
@@ -263,7 +261,7 @@ void Model::SetControlPoints()
 {
 	// pointsPerEdge control point correspond to every edge
 	//AddControlPointsFromTheEdge(1, 2);
-	//AddControlPointsFromTheEdge(0, 1);
+	AddControlPointsFromTheEdge(0, 1);
  	//AddControlPointsFromTheEdge(2, 3);
 	AddControlPointsFromTheEdge(0, 4);
 

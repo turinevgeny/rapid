@@ -16,6 +16,54 @@ using std::endl;
 
 using namespace cv;
 
+class RAPIDTestingTracker : public RAPIDTracker
+{
+public:
+	RAPIDTestingTracker(Model& model) : RAPIDTracker(model) { }
+
+	virtual cv::Mat	ExtractEdges(const cv::Mat& image) const
+	{
+		Mat edges;
+		cvtColor(image, edges, CV_BGR2GRAY);
+		return edges;
+	}
+};
+
+class RapidTestingModel : public Model
+{
+public:
+	RapidTestingModel() {}
+	RapidTestingModel(const cv::Mat* cornerPoints,
+		const int      pointsPerEdge,
+		const cv::Mat& cameraMatrix,
+		const cv::Mat& distortionCoefficients,
+		const cv::Mat& rotationVector,
+		const cv::Mat& translateVector)
+		: Model(cornerPoints, pointsPerEdge, cameraMatrix, distortionCoefficients, rotationVector, translateVector)
+	{ }
+	RapidTestingModel(const RapidTestingModel& model) : Model(model) { }
+	RapidTestingModel(const Model& model) : Model(model) { }
+
+	virtual void SetControlPoints()
+	{
+		// pointsPerEdge control point correspond to every edge
+		AddControlPointsFromTheEdge(1, 2);
+		AddControlPointsFromTheEdge(0, 1);
+		//AddControlPointsFromTheEdge(2, 3);
+		AddControlPointsFromTheEdge(0, 4);
+
+		//AddControlPointsFromTheEdge(4, 5);
+		AddControlPointsFromTheEdge(5, 6);
+		//AddControlPointsFromTheEdge(6, 7);
+		AddControlPointsFromTheEdge(7, 4);
+
+		AddControlPointsFromTheEdge(0, 3);
+		AddControlPointsFromTheEdge(1, 5);
+		//AddControlPointsFromTheEdge(2, 6);
+		AddControlPointsFromTheEdge(3, 7);
+	}
+};
+
 Model GetHardcodedModel()
 {
 	const double a = 145.0;
@@ -25,8 +73,8 @@ Model GetHardcodedModel()
 	const double alpha = CV_PI/2 - acos(100/a);
 
 	const Mat rotationMatrix = (Mat_<double>(3,3) <<  cos(alpha), 0, sin(alpha),
-															  0,          1, 0,
-															  -sin(alpha), 0, cos(alpha));
+		0,          1, 0,
+		-sin(alpha), 0, cos(alpha));
 
 	const Mat cornerPoints[] = {
 		(Mat_<double>(1,3) << 0, 0, 0)*rotationMatrix,	// bottom anterior point on the left side
@@ -53,19 +101,6 @@ Model GetHardcodedModel()
 
 	return model;
 }
-
-class RAPIDTestingTracker : public RAPIDTracker
-{
-public:
-	RAPIDTestingTracker(Model& model) : RAPIDTracker(model) { }
-
-	virtual cv::Mat	ExtractEdges(const cv::Mat& image) const
-	{
-		Mat edges;
-		cvtColor(image, edges, CV_BGR2GRAY);
-		return edges;
-	}
-};
 
 class FakeMovie
 {
@@ -138,7 +173,7 @@ int main(int argn, char* argv[])
     Mat firstMovement = (Mat_<double>(6,1) << 0.001, 0.002, 0.003, 0.5, 0.5, 0.5);
     //Mat firstMovement = (Mat_<double>(6,1) << 0.0, 0.0, 0.0, 2.0, 2.0, 2.0);// TODO: Why does it crash?
 
-	Model model = GetHardcodedModel();
+	Model model = (RapidTestingModel) GetHardcodedModel();
 
 	std::list<Mat> fakeMovieScenario;
 
@@ -166,7 +201,7 @@ int main(int argn, char* argv[])
 
         model = tracker.ProcessFrame(movieFrame);
 
-	    movieFrame = model.Outline(movieFrame, true, blueColor);
+	    movieFrame = model.Outline(movieFrame, true, blueColor, true);
         imshow(nextWindowName, movieFrame);
         Mat temp = Mat::zeros(3, 1, CV_64F);
 
