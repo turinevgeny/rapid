@@ -170,8 +170,9 @@ int main(int argn, char* argv[])
 	const int VideoWidth = 640;
 
 	//Mat firstMovement = (Mat_<double>(6,1) << 0.0, -0.001, 0.002, 0.01, 0.03, -0.01);
-    Mat firstMovement = (Mat_<double>(6,1) << 0.001, 0.002, 0.003, 0.5, 0.5, 0.5);
-    //Mat firstMovement = (Mat_<double>(6,1) << 0.0, 0.0, 0.0, 2.0, 2.0, 2.0);// TODO: Why does it crash?
+    //Mat firstMovement = (Mat_<double>(6,1) << 0.001, 0.002, 0.003, 0.5, 0.5, 0.5);
+    //Mat firstMovement = (Mat_<double>(6,1) << 0, 0, CV_PI/56, 0.0, 0.0, 0.0);         // displacement by a big angle
+    Mat firstMovement = (Mat_<double>(6,1) << 0.0, 0.0, 0.0, 2.0, 2.0, 2.0);            // It doesn't crash
 
 	Model model = (RapidTestingModel) GetHardcodedModel();
 

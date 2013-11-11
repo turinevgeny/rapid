@@ -19,7 +19,7 @@ RAPIDTracker::RAPIDTracker(Model& _model)
 Mat RAPIDTracker::ExtractEdges(const Mat& image) const
 {
 	Mat edges;
-	cvtColor(image, edges, CV_BGR2GRAY); //TODO: Is it necessary for RapidTesting? - yes
+	cvtColor(image, edges, CV_BGR2GRAY);
 
 	GaussianBlur(edges, edges, Size(7,7), 1.5, 1.5);
 	Canny(edges, edges, 20, 100, 3);
@@ -92,10 +92,19 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
 	int cols=edges.cols;
 	int rows=edges.rows;
 
- 	diff2=diff1=edges.at<uchar>(currY1,currX1);
+    if( (currX1 < cols)&&(currX1 > 0)&&
+        (currY1 < rows)&&(currY1 > 0) )
+    {
+        diff2=diff1=edges.at<uchar>(currY1,currX1);
+    }
+    else 
+    {
+        std::cout<<"Warning: The control point doesn't exist to image! Coordinates: ( "<<currX1<<" : "<<currY1<<" )"<<std::endl;
+        return false; // The point won't be taken into account
+    }
 
-	while( (currX1<cols)&&(currX2<cols)&&(currY1<rows)&&(currY2<rows)&&
-		   (currX1>0)&&(currX2>0)&&(currY1>0)&&(currY2>0)&& 
+    while( (currX1+dx1<cols)&&(currY1+dy1<rows)&&(currX1+dx1>0)&&(currY1+dy1>0)&&
+    	   (currX2+dx2<cols)&&(currY2+dy2<rows)&&(currX2+dx2>0)&&(currY2+dy2>0)&&
 		   (diff1!=255) && (diff2!=255) )
 	{
         currX1+=dx1;
@@ -110,7 +119,7 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
 	if (diff1==255) 
     {
 		foundPoint = Point2d(currX1, currY1);
-         //foundPoint2 = Point2d(currX2, currY2);
+        //foundPoint2 = Point2d(currX2, currY2); //to draw purple point at which the search stopped
         if ((diff2==255) && (num == 0))
         { 
             cout<<"Warning: The found point and the control point are the same! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
@@ -128,7 +137,7 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
         if(diff2==255)
         {
 		    foundPoint = Point2d(currX2, currY2);
-            //foundPoint2 = Point2d(currX1, currY1);
+            //foundPoint2 = Point2d(currX1, currY1); //to draw purple point at which the search stopped
         }
         else
         {
@@ -137,17 +146,10 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
             cout<<"Warning: Point isn't found for control point( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
             cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<endl;
             cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<endl;
-            return false;
+            return false; // The point won't be taken into account
         }
     }
 
-    //cout<<"controlPoint  "<<controlPoint.x<<" : "<<controlPoint.y<<endl;
-    //cout<<"foundPoint  "<<foundPoint.x<<" : "<<foundPoint.y<<endl;
-
-    //Displays how many iterations are searched foundPoints
-	//cout<<"num  "<<num<<endl;
-
-    //cout<<"foundDirection  "<<foundDirection<<endl;
 	return true;
 }
 
