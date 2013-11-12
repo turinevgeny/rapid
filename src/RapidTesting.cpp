@@ -189,25 +189,31 @@ int main(int argn, char* argv[])
     int frameNumber = 0;
     Scalar blueColor = Scalar(255, 0, 0);
 
-	movie.ReadNextFrame(movieFrame);
-	movie.ReadNextFrame(movieFrame);
-	movie.ReadNextFrame(movieFrame);
+	//movie.ReadNextFrame(movieFrame);
+	//movie.ReadNextFrame(movieFrame);
+	//movie.ReadNextFrame(movieFrame);
+
+    int numberOfRepetitions = 4;
     while(movie.ReadNextFrame(movieFrame))
     {   
         frameNumber++;
+        
+        for(int i=0; i<numberOfRepetitions; i++)
+        {
+            Mat workFrame = movieFrame.clone();
 
-        Mat cleanFrame = movieFrame.clone();
-        Mat prev = model.Outline(movieFrame, true, blueColor);
-		imshow(currentWindowName, prev);
+            Mat prev = model.Outline(workFrame, true, blueColor);
+	        imshow(currentWindowName, prev);
 
-        model = tracker.ProcessFrame(movieFrame, 2);
+            model = tracker.ProcessFrame(workFrame);
 
-	    movieFrame = model.Outline(movieFrame, true, blueColor, true);
-        imshow(nextWindowName, movieFrame);
-        Mat temp = Mat::zeros(3, 1, CV_64F);
+	        workFrame = model.Outline(workFrame, true, blueColor);
+            imshow(nextWindowName, workFrame);
 
-        model.DrawReferencePoints(cleanFrame, temp, frameNumber);
-		waitKey();
+            Mat temp = Mat::zeros(3, 1, CV_64F);//Fake point of pattern
+            model.DrawReferencePoints(movieFrame, temp, frameNumber, i);
+	        waitKey();
+        }
     }
 
 	return 0;

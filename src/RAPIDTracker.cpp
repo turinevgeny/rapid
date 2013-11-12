@@ -206,17 +206,7 @@ Model RAPIDTracker::ProcessFrame(const Mat& frame)
     model.updatePose(rvec - model.rotationVector, tvec - model.translateVector);
 
 	namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);
-	imshow("Current: foundPoints", result);
+    imshow("Current: foundPoints", result);
 
  	return model;
-}
-
-Model RAPIDTracker::ProcessFrame(const cv::Mat& frame, int iterations)
-{
-	for(int i = 0; i < iterations; i++)
-	{
-		ProcessFrame(frame);
-	}
-
-	return model;
 }

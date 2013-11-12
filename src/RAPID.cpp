@@ -67,13 +67,13 @@ int main(int argn, char* argv[])
         ))
         return 1;
     
-    Mat frame;
+    Mat movieFrame;
     //for ../video/../test.mov firstFrame = 78
     for(int i = 0; i < firstFrame; i++)
-        cap.read(frame);
+        cap.read(movieFrame);
 
     Mat rVec, tVec, patternOrigin3D;
-    if (!EstimateInititalPose(frame, Camera_Matrix, Distortion_Coefficients, rVec, tVec, patternOrigin3D))
+    if (!EstimateInititalPose(movieFrame, Camera_Matrix, Distortion_Coefficients, rVec, tVec, patternOrigin3D))
     {
         cerr << endl << "Can't find the calibration pattern."<< endl
              << " Troubleshooting: change numberOfFirstFrame or the input video" << endl;
@@ -91,17 +91,24 @@ int main(int argn, char* argv[])
     namedWindow(nextWindowName, CV_WINDOW_AUTOSIZE);
     namedWindow(currentWindowName, CV_WINDOW_AUTOSIZE);
 
-	while (cap.read(frame))
+    int numberOfRepetitions = 3;
+	while (cap.read(movieFrame))
 	{
-        Mat cleanFrame = frame.clone();
-		Mat prev = model.Outline(frame);
-		imshow(currentWindowName, prev);
-		model = tracker.ProcessFrame(frame, 2);
-		frame = model.Outline(frame);
-		imshow(nextWindowName, frame);
-        //after updating rotate and translate vectors
-        model.DrawReferencePoints(cleanFrame, patternOrigin3D, cap.get(CV_CAP_PROP_POS_FRAMES));
-		waitKey();
+        for(int i=0; i<numberOfRepetitions; i++)
+        {
+            Mat workFrame = movieFrame.clone();
+
+	        Mat prev = model.Outline(workFrame);
+	        imshow(currentWindowName, prev);
+
+	        model = tracker.ProcessFrame(workFrame);
+
+	        workFrame = model.Outline(workFrame);
+	        imshow(nextWindowName, workFrame);
+
+            model.DrawReferencePoints(movieFrame, patternOrigin3D, cap.get(CV_CAP_PROP_POS_FRAMES), i);
+	        waitKey();
+    }
 	}
 
 	return 0;

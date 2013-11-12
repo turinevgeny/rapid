@@ -140,13 +140,13 @@ Point2d Model::Project(const Mat& _3DPoint) const
     return projectedPoints[0];
 }
 
-void Model::DrawReferencePoints(const Mat& source, Mat& patternOrigin3D, int numFrame)
+void Model::DrawReferencePoints(const Mat& source, Mat& patternOrigin3D, int numFrame, int numIter)
 {
     Mat view = source.clone();
 
     std::stringstream ss;
     std::string text;
-    ss << numFrame;
+    ss << numFrame <<":"<<numIter+1;
     text = ss.str();
 
     putText(view, text, cvPoint(70,30), FONT_HERSHEY_SIMPLEX, 1.5, Scalar(0,255,0), 3);

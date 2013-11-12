@@ -24,7 +24,10 @@ public:
     Model(const Model& model);
     //Model& operator= (const Model& other);
 	~Model();
-    void            DrawReferencePoints(const cv::Mat&   source, cv::Mat& patternOrigin3D, int numFrame); // to draw the origin of model and the origin of pattern
+    void            DrawReferencePoints(const cv::Mat&   source, 
+                                        cv::Mat& patternOrigin3D, 
+                                        int numFrame,
+                                        int numIter); // to draw the origin of model and the origin of pattern
 	cv::Mat         Outline(const cv::Mat&   source,
                             const bool       isDrawControlPoints = true,
                             const cv::Scalar color = (cv::Scalar::all(255)),
