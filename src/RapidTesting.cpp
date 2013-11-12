@@ -1,5 +1,6 @@
 #include <iostream>
 #include <list>
+#include <map>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -169,17 +170,19 @@ int main(int argn, char* argv[])
 	const int VideoHeight = 480;
 	const int VideoWidth = 640;
 
-	//Mat firstMovement = (Mat_<double>(6,1) << 0.0, -0.001, 0.002, 0.01, 0.03, -0.01);
-    //Mat firstMovement = (Mat_<double>(6,1) << 0.001, 0.002, 0.003, 0.5, 0.5, 0.5);
-    //Mat firstMovement = (Mat_<double>(6,1) << 0, 0, CV_PI/56, 0.0, 0.0, 0.0);         // displacement by a big angle
-    Mat firstMovement = (Mat_<double>(6,1) << 0.0, 0.0, 0.0, 2.0, 2.0, 2.0);            // It doesn't crash
+    std::map <std::string, Mat> movementVector6D;
+    movementVector6D["default"] = (Mat_<double>(6,1) << 0.001, 0.002, 0.003, 0.1, 0.1, 0.1);
+    movementVector6D["mediumTranslate"] = (Mat_<double>(6,1) << 0, 0, 0, -0.8, 0.8, -0.8);
+    movementVector6D["bigTranslate"] = (Mat_<double>(6,1) << 0, 0, 0, -2.0, 2.0, 2.0);
+    movementVector6D["smallTranslate"] = (Mat_<double>(6,1) << 0, 0, 0, 0.1, 0.1, -0.1);
+    movementVector6D["oneDirectionRotateZ"] = (Mat_<double>(6,1) << 0, 0, CV_PI/56, 0.0, 0.0, 0.0); 
 
 	Model model = (RapidTestingModel) GetHardcodedModel();
 
 	std::list<Mat> fakeMovieScenario;
 
     for(int i=0;i<1000;i++)
-		fakeMovieScenario.push_back(firstMovement);
+		fakeMovieScenario.push_back(movementVector6D["oneDirectionRotateZ"]);
 
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
 	//movie.Play();
