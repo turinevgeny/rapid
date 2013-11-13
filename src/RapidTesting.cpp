@@ -71,7 +71,11 @@ Model GetHardcodedModel()
 	const double b = 45.0;
 	const double c = 65.0;
 
-	const double alpha = CV_PI/2 - acos(100/a);
+    std::map <std::string, double> angle;
+    angle["default"] = CV_PI/2 - acos(100/a);
+    angle["north_east"] = CV_PI - acos(100/a);
+
+	const double alpha = angle["north_east"];
 
 	const Mat rotationMatrix = (Mat_<double>(3,3) <<  cos(alpha), 0, sin(alpha),
 		0,          1, 0,
@@ -96,7 +100,12 @@ Model GetHardcodedModel()
 		0, 0, 1);
 	const Mat distortionCoefficients =  Mat::zeros(5, 1, CV_64F);
 	const Mat rotationVector = Mat::zeros(3, 1, CV_64F);
-	const Mat translateVector = (Mat_<double>(3,1) << -18, 30, 200);
+
+    std::map <std::string, Mat> tVec;
+    tVec["default"] = (Mat_<double>(3,1) << -18, 30, 200);
+    tVec["north_east"] = (Mat_<double>(3,1) << 90, 10, 300);
+
+	const Mat translateVector = tVec["north_east"];
 
 	Model model(cornerPoints, pointsPerEdge, cameraMatrix, distortionCoefficients, rotationVector, translateVector);
 
@@ -171,18 +180,21 @@ int main(int argn, char* argv[])
 	const int VideoWidth = 640;
 
     std::map <std::string, Mat> movementVector6D;
-    movementVector6D["default"] = (Mat_<double>(6,1) << 0.001, 0.002, 0.003, 0.1, 0.1, 0.1);
-    movementVector6D["mediumTranslate"] = (Mat_<double>(6,1) << 0, 0, 0, -0.8, 0.8, -0.8);
-    movementVector6D["bigTranslate"] = (Mat_<double>(6,1) << 0, 0, 0, -2.0, 2.0, 2.0);
-    movementVector6D["smallTranslate"] = (Mat_<double>(6,1) << 0, 0, 0, 0.1, 0.1, -0.1);
-    movementVector6D["oneDirectionRotateZ"] = (Mat_<double>(6,1) << 0, 0, CV_PI/56, 0.0, 0.0, 0.0); 
+    movementVector6D["default"]              = (Mat_<double>(6,1) << 0.001, 0.002, 0.003, 0.1, 0.1, 0.1);
+    movementVector6D["bigTranslate"]         = (Mat_<double>(6,1) << 0, 0, 0, 2.0, 2.0, 2.0);
+    movementVector6D["smallTranslate"]       = (Mat_<double>(6,1) << 0, 0, 0, 0.1, 0.1, -0.1);
+    movementVector6D["mediumTranslate"]      = (Mat_<double>(6,1) << 0, 0, 0, -0.8, 0.8, -0.8);
+    movementVector6D["oneDirectionRotateZ"]  = (Mat_<double>(6,1) << 0, 0, CV_PI/56, 0.0, 0.0, 0.0); 
+    movementVector6D["oneDirectionRotateY"]  = (Mat_<double>(6,1) << 0, CV_PI/56, 0, 0.0, 0.0, 0.0); 
+    movementVector6D["oneDirectionRotateX"]  = (Mat_<double>(6,1) << CV_PI/56, 0, 0, 0.0, 0.0, 0.0); 
+    movementVector6D["oneDirectionRotateZs"] = (Mat_<double>(6,1) << 0, 0, CV_PI/120, 0.0, 0.0, 0.0); 
 
 	Model model = (RapidTestingModel) GetHardcodedModel();
 
 	std::list<Mat> fakeMovieScenario;
 
     for(int i=0;i<1000;i++)
-		fakeMovieScenario.push_back(movementVector6D["oneDirectionRotateZ"]);
+		fakeMovieScenario.push_back(movementVector6D["oneDirectionRotateZs"]);
 
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
 	//movie.Play();
@@ -192,11 +204,7 @@ int main(int argn, char* argv[])
     int frameNumber = 0;
     Scalar blueColor = Scalar(255, 0, 0);
 
-	//movie.ReadNextFrame(movieFrame);
-	//movie.ReadNextFrame(movieFrame);
-	//movie.ReadNextFrame(movieFrame);
-
-    int numberOfRepetitions = 4;
+    int numberOfRepetitions = 3;
     while(movie.ReadNextFrame(movieFrame))
     {   
         frameNumber++;
