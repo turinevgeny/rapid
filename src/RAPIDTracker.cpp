@@ -250,8 +250,8 @@ double RAPIDTracker::GetConvergenceMeasure(const Model& model1, const Model& mod
 
 	Point2d currentPoint;
 
-	for(std::list<Point2d>::const_iterator pointsIter = model1Points.cbegin();
-		pointsIter != model1Points.cend();
+	for(std::list<Point2d>::const_iterator pointsIter = model1Points.begin();
+		pointsIter != model1Points.end();
 		pointsIter++)
 	{
 		currentPoint = *pointsIter;
@@ -259,8 +259,8 @@ double RAPIDTracker::GetConvergenceMeasure(const Model& model1, const Model& mod
 		model1PointsCoords.push_back(currentPoint.y);
 	}
 
-	for(std::list<Point2d>::const_iterator pointsIter = model2Points.cbegin();
-		pointsIter != model2Points.cend();
+	for(std::list<Point2d>::const_iterator pointsIter = model2Points.begin();
+		pointsIter != model2Points.end();
 		pointsIter++)
 	{
 		currentPoint = *pointsIter;

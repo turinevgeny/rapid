@@ -294,8 +294,8 @@ std::list<Point2d> Model::GetProjectedControlPoints() const
 {
 	std::list<Point2d> projectedPoints;
 
-	for(std::list<Mat>::const_iterator controlPointsIter = controlPoints.cbegin();
-		controlPointsIter != controlPoints.cend();
+	for(std::list<Mat>::const_iterator controlPointsIter = controlPoints.begin();
+		controlPointsIter != controlPoints.end();
 		controlPointsIter++)
 	{
 		projectedPoints.push_back(Project(*controlPointsIter));
