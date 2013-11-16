@@ -289,3 +289,17 @@ void Model::updatePose(const Mat& angle, const Mat& distance)
     translateVector += distance; 
     rotationVector += angle;     
 }
+
+std::list<Point2d> Model::GetProjectedControlPoints() const
+{
+	std::list<Point2d> projectedPoints;
+
+	for(std::list<Mat>::const_iterator controlPointsIter = controlPoints.cbegin();
+		controlPointsIter != controlPoints.cend();
+		controlPointsIter++)
+	{
+		projectedPoints.push_back(Project(*controlPointsIter));
+	}
+
+	return projectedPoints;
+}

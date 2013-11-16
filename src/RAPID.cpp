@@ -21,8 +21,8 @@ void help()
 	cout << endl <<
 	"\
 --------------------------------------------------------------------------\n\
-RAPID - A Video Rate Object Tracker\n\
-Real-time attitude and position determination of a known 3D object\n\
+A Video Rate Object Tracker\n\
+Attitude and position determination of a known 3D object\n\
 Usage:\n\
 ./RAPID VideoInfoXmlFile numberOfFirstFrame\n\
 VideoInfoXmlFile - XML or YAML file containing video and model information;\n\
@@ -91,24 +91,30 @@ int main(int argn, char* argv[])
     namedWindow(nextWindowName, CV_WINDOW_AUTOSIZE);
     namedWindow(currentWindowName, CV_WINDOW_AUTOSIZE);
 
-    int numberOfRepetitions = 3;
+    const int iterationsThreshold = 13;
+	const double precisionFreshold = 1e-1;
+
 	while (cap.read(movieFrame))
 	{
-        for(int i=0; i<numberOfRepetitions; i++)
+		double precision = DBL_MAX;
+
+        for(int i = 0; (precision > precisionFreshold) && ( i < iterationsThreshold); i++)
         {
             Mat workFrame = movieFrame.clone();
 
 	        Mat prev = model.Outline(workFrame);
 	        imshow(currentWindowName, prev);
 
+			Model prevModel = model;
 	        model = tracker.ProcessFrame(workFrame);
+			precision = tracker.GetConvergenceMeasure(prevModel, model, NORM_INF);
 
 	        workFrame = model.Outline(workFrame);
 	        imshow(nextWindowName, workFrame);
 
             model.DrawReferencePoints(movieFrame, patternOrigin3D, cap.get(CV_CAP_PROP_POS_FRAMES), i);
-	        waitKey();
-    }
+	        waitKey(100);
+		}
 	}
 
 	return 0;

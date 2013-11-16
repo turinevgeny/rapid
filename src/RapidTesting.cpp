@@ -204,19 +204,26 @@ int main(int argn, char* argv[])
     int frameNumber = 0;
     Scalar blueColor = Scalar(255, 0, 0);
 
-    int numberOfRepetitions = 5;
+    const int iterationsThreshold = 12;
+	const double precisionFreshold = 1e-1;
+
     while(movie.ReadNextFrame(movieFrame))
     {   
         frameNumber++;
-        
-        for(int i=0; i<numberOfRepetitions; i++)
+
+        double precision = DBL_MAX;
+
+        for(int i = 0; (precision > precisionFreshold) && ( i < iterationsThreshold); i++)
         {
             Mat workFrame = movieFrame.clone();
 
             Mat prev = model.Outline(workFrame, true, blueColor);
 	        imshow(currentWindowName, prev);
 
+			Model prevModel = model;
             model = tracker.ProcessFrame(workFrame);
+			
+			precision = tracker.GetConvergenceMeasure(prevModel, model, NORM_INF);
 
 	        workFrame = model.Outline(workFrame, true, blueColor);
             imshow(nextWindowName, workFrame);
@@ -226,6 +233,6 @@ int main(int argn, char* argv[])
 	        waitKey();
         }
     }
-
+	
 	return 0;
 }

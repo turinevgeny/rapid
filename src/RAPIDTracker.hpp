@@ -13,6 +13,8 @@ class RAPIDTracker
 public:
 	RAPIDTracker(Model& model);
 	virtual Model ProcessFrame(const cv::Mat& frame);
+
+	double GetConvergenceMeasure(const Model& model1, const Model& model2, int normType);
 private:
 	Model		model;
 private:

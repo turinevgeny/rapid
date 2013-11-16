@@ -239,3 +239,34 @@ Model RAPIDTracker::ProcessFrame(const Mat& frame)
 
  	return model;
 }
+
+double RAPIDTracker::GetConvergenceMeasure(const Model& model1, const Model& model2, int normType)
+{
+	std::list<Point2d> model1Points = model1.GetProjectedControlPoints();
+	std::list<Point2d> model2Points = model2.GetProjectedControlPoints();
+
+	Mat model1PointsCoords(model1Points.size(), 1, CV_64F);
+	Mat	model2PointsCoords(model2Points.size(), 1, CV_64F);
+
+	Point2d currentPoint;
+
+	for(std::list<Point2d>::const_iterator pointsIter = model1Points.cbegin();
+		pointsIter != model1Points.cend();
+		pointsIter++)
+	{
+		currentPoint = *pointsIter;
+		model1PointsCoords.push_back(currentPoint.x);
+		model1PointsCoords.push_back(currentPoint.y);
+	}
+
+	for(std::list<Point2d>::const_iterator pointsIter = model2Points.cbegin();
+		pointsIter != model2Points.cend();
+		pointsIter++)
+	{
+		currentPoint = *pointsIter;
+		model2PointsCoords.push_back(currentPoint.x);
+		model2PointsCoords.push_back(currentPoint.y);
+	}
+
+	return norm(model1PointsCoords, model2PointsCoords, normType);
+}

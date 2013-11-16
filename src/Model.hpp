@@ -27,13 +27,15 @@ public:
     void            DrawReferencePoints(const cv::Mat&   source, 
                                         cv::Mat& patternOrigin3D, 
                                         int numFrame,
-                                        int numIter); // to draw the origin of model and the origin of pattern
+                                        int numIter);		// to draw the origin of model and the origin of pattern
 	cv::Mat         Outline(const cv::Mat&   source,
                             const bool       isDrawControlPoints = true,
                             const cv::Scalar color = (cv::Scalar::all(255)),
                             const bool       isDrawCompanionPoints = false);	      // projects the model onto the image
 	void			updatePose(const cv::Mat& rotVector, const cv::Mat& transVector); // 3d vectors
-	void			updatePose(const cv::Mat& solution);	// solution = rotation angles concat translation distances
+	void			updatePose(const cv::Mat& solution);	// solution = rotation angles concatenated with translation distances
+
+	std::list<cv::Point2d> GetProjectedControlPoints() const;
 private:
 	std::vector<cv::Mat>	cornerPoints;		// corner points in model coords
 	cv::Mat					cameraMatrix, distortionCoefficients;
