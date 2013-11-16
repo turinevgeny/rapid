@@ -85,6 +85,9 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
 
 	int num=0;
 	int diff1=0,diff2=0;
+    int diff_add_hr_1=0, diff_add_vr_1=0;
+    int diff_add_hr_2=0, diff_add_vr_2=0;
+
 	double currX1=controlPoint.x;
 	double currY1=controlPoint.y;
 	double currX2=currX1;
@@ -108,14 +111,25 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
 
     while( (currX1+dx1<cols)&&(currY1+dy1<rows)&&(currX1+dx1>0)&&(currY1+dy1>0)&&
     	   (currX2+dx2<cols)&&(currY2+dy2<rows)&&(currX2+dx2>0)&&(currY2+dy2>0)&&
+           (diff_add_hr_1!=255)&&(diff_add_vr_1!=255)&&
+           (diff_add_hr_2!=255)&&(diff_add_vr_2!=255)&&
 		   (diff1!=255) && (diff2!=255) )
 	{
+		diff1=edges.at<uchar>(currY1+dy1,currX1+dx1);
+		diff2=edges.at<uchar>(currY2+dy2,currX2+dx2);
+
+        if ((foundDirection == DOWNWARD_DIAGONAL) || (foundDirection == UPWARD_DIAGONAL))
+        {
+            diff_add_hr_1=edges.at<uchar>(currY1+ 0 ,currX1+dx1);
+            diff_add_vr_1=edges.at<uchar>(currY1+dy1,currX1+ 0 );
+		    diff_add_hr_2=edges.at<uchar>(currY2+ 0 ,currX2+dx2);
+            diff_add_vr_2=edges.at<uchar>(currY2+dy2,currX2+ 0 );
+        }
+
         currX1+=dx1;
 		currY1+=dy1;
 		currX2+=dx2;
 		currY2+=dy2;
-		diff1=edges.at<uchar>(currY1,currX1);
-		diff2=edges.at<uchar>(currY2,currX2);
         num++;
 	}
 
@@ -141,6 +155,18 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
         {
 		    foundPoint = Point2d(currX2, currY2);
             //foundPoint2 = Point2d(currX1, currY1); //to draw purple point at which the search stopped
+        }
+        else if (diff_add_hr_1 == 255) {
+            foundPoint = Point2d(currX1 + 0, currY1-dy1);
+        }
+        else if (diff_add_vr_1 == 255) {
+            foundPoint = Point2d(currX1-dx1, currY1 + 0);
+        }
+        else if (diff_add_hr_2 == 255) {
+            foundPoint = Point2d(currX2 + 0, currY2-dy2);
+        }
+        else if (diff_add_vr_2 == 255) {
+            foundPoint = Point2d(currX2-dx2, currY2 + 0);
         }
         else
         {
