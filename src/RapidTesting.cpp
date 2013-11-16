@@ -194,7 +194,7 @@ int main(int argn, char* argv[])
 	std::list<Mat> fakeMovieScenario;
 
     for(int i=0;i<1000;i++)
-		fakeMovieScenario.push_back(movementVector6D["oneDirectionRotateZs"]);
+		fakeMovieScenario.push_back(movementVector6D["oneDirectionRotateZ"]);
 
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
 	//movie.Play();
@@ -204,7 +204,7 @@ int main(int argn, char* argv[])
     int frameNumber = 0;
     Scalar blueColor = Scalar(255, 0, 0);
 
-    int numberOfRepetitions = 3;
+    int numberOfRepetitions = 5;
     while(movie.ReadNextFrame(movieFrame))
     {   
         frameNumber++;

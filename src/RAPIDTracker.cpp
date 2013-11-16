@@ -58,14 +58,15 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
 	if( (tangentAlpha > (-1)*top) && (tangentAlpha < (-1)*bottom) )
 	{
 		foundDirection=DOWNWARD_DIAGONAL;
-		dx1=-1; dy1= 1;
-		dx2= 1; dy2=-1;
+        dx1=-1; dy1=-1;
+		dx2= 1; dy2= 1;
+		
 	}
 	if( (tangentAlpha < top) && (tangentAlpha > bottom) )
 	{
 		foundDirection=UPWARD_DIAGONAL;
-		dx1=-1; dy1=-1;
-		dx2= 1; dy2= 1;
+	    dx1=-1; dy1= 1;
+		dx2= 1; dy2=-1;
 	}
 	if( (tangentAlpha >= top) || (tangentAlpha <= (-1)*top) )
 	{
@@ -99,6 +100,8 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
     }
     else 
     {
+        foundPoint = Point2d(currX1, currY1);
+        foundPoint2 = Point2d(currX2, currY2);
         std::cout<<"Warning: The control point doesn't exist to image! Coordinates: ( "<<currX1<<" : "<<currY1<<" )"<<std::endl;
         return false; // The point won't be taken into account
     }
