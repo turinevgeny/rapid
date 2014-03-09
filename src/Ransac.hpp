@@ -12,6 +12,9 @@ struct DetectionParams
 	cv::Mat rot, trans;
 };
 
+#define Max_Iter 2000
+#define Prob_Good_Sample 0.999
+
 template <typename DataType, typename ModelParametersType>
 class Ransac
 {
@@ -43,10 +46,29 @@ public:
 		const size_t				minimumSizeSamplesToFit,
 		std::vector<unsigned>		&out_best_inliers,
 		ModelParametersType			&out_best_model,
-		const double                prob_good_sample = 0.999,
-		const size_t				maxIter = 2000
+		const double                prob_good_sample = Prob_Good_Sample,
+		const size_t				maxIter = Max_Iter
 		);
-	static int DummyMethod();
+
+	/** An implementation of the RANSAC algorithm for robust fitting of models to data
+	 ** with no degenerate function
+	*/
+	static bool execute(
+		const std::vector<DataType> &data,
+		TRansacFitFunctor			fit_func,
+		TRansacDistanceFunctor  	dist_func,
+		const double   				distanceThreshold,
+		const size_t				minimumSizeSamplesToFit,
+		std::vector<unsigned>		&out_best_inliers,
+		ModelParametersType			&out_best_model,
+		const double                prob_good_sample = Prob_Good_Sample,
+		const size_t				maxIter = Max_Iter
+		);
+
+private:
+	static bool TrueDegenerativeFunction(
+		const std::vector<DataType> &allData,
+		const std::vector<unsigned> &useIndices );
 }; // end class
 
 }
