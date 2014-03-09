@@ -4,6 +4,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
+#include <opencv2/highgui/highgui_c.h>
+
 // Model traits and handling methods
 #include "Model.hpp"
 // Algorithm wrapper
