@@ -4,6 +4,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
+#include <opencv2/highgui/highgui_c.h>
+
 // Model traits and handling methods
 #include "Model.hpp"
 // Algorithm wrapper
@@ -66,7 +68,7 @@ int main(int argn, char* argv[])
         Distortion_Coefficients
         ))
         return 1;
-    
+
     Mat movieFrame;
     //for ../video/../test.mov firstFrame = 78
     for(int i = 0; i < firstFrame; i++)
@@ -152,7 +154,7 @@ bool EstimateInititalPose(const Mat& circlesImage,
 
     Mat view = circlesImage.clone();
 
-    if (found) 
+    if (found)
     {
         //drawChessboardCorners( view, boardSize, Mat(foundBoardCorners), found );
         cout << "found circles Grid!" << endl;
@@ -221,7 +223,7 @@ bool ValidateAndInterpretePrameters(const int argn,
 
     // trying to grab a frame from the video file
     Mat frame;
-    if (!cap.read(frame))   
+    if (!cap.read(frame))
     {
         help();
         cerr << "A frame could not be loaded" << endl;
@@ -232,7 +234,7 @@ bool ValidateAndInterpretePrameters(const int argn,
 
     // reading calibration data
     FileStorage cameraData;
-    cameraData.open(videoInfo.GetCalibDataPath(), FileStorage::READ);    
+    cameraData.open(videoInfo.GetCalibDataPath(), FileStorage::READ);
     if (!cameraData.isOpened())
     {
         cerr << "Failed to open " << videoInfo.GetCalibDataPath() << endl;
