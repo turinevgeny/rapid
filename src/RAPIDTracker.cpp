@@ -31,9 +31,9 @@ Mat RAPIDTracker::ExtractEdges(const Mat& image) const
 }
 
 bool RAPIDTracker::FindPoints(Point2d controlPoint,
-                              Point2d companionPoint, 
-                              const Mat& edges, 
-                              Point2d& foundPoint, 
+                              Point2d companionPoint,
+                              const Mat& edges,
+                              Point2d& foundPoint,
                               Point2d& foundPoint2)
 {
 	double kx=1/model.cameraMatrix.at<double>(0,0);
@@ -60,7 +60,7 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
 		foundDirection=DOWNWARD_DIAGONAL;
         dx1=-1; dy1=-1;
 		dx2= 1; dy2= 1;
-		
+
 	}
 	if( (tangentAlpha < top) && (tangentAlpha > bottom) )
 	{
@@ -101,7 +101,7 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
     {
         diff2=diff1=edges.at<uchar>(currY1,currX1);
     }
-    else 
+    else
     {
         foundPoint = Point2d(currX1, currY1);
         foundPoint2 = Point2d(currX2, currY2);
@@ -133,12 +133,12 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
         num++;
 	}
 
-	if (diff1==255) 
+	if (diff1==255)
     {
 		foundPoint = Point2d(currX1, currY1);
         //foundPoint2 = Point2d(currX2, currY2); //to draw purple point at which the search stopped
         if ((diff2==255) && (num == 0))
-        { 
+        {
             cout<<"Warning: The found point and the control point are the same! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
         }
         if ((diff2==255) && (num > 0))
@@ -149,7 +149,7 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
             cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<endl;
         }
     }
-	else 
+	else
     {
         if(diff2==255)
         {
@@ -211,9 +211,9 @@ Model RAPIDTracker::ProcessFrame(const Mat& frame)
 		    double Py = (*controlPointsIter).at<double>(0,1);
 		    double Pz = (*controlPointsIter).at<double>(0,2);
 
-            modelPoints3D.push_back(Point3f(Px, Py, Pz)); 
+            modelPoints3D.push_back(Point3f(Px, Py, Pz));
         }
-        else 
+        else
         {
             circle(result, foundPoint, 1, Scalar(255,0,255));
             circle(result, foundPoint2, 1, Scalar(255,0,255));
@@ -231,7 +231,7 @@ Model RAPIDTracker::ProcessFrame(const Mat& frame)
     //cout << "---(SolvePnP) rotate vector" << endl << rvec << endl << "---(SolvePnP) translate vector=" << endl << tvec << endl;
     cout << "---(SolvePnP) delta rotate vector" << endl << rvec - model.rotationVector<< endl;
     cout << "---(SolvePnP) delta translate vector=" << endl << tvec - model.translateVector << endl << endl;
-    
+
     model.updatePose(rvec - model.rotationVector, tvec - model.translateVector);
 
 	namedWindow("Current: foundPoints", CV_WINDOW_AUTOSIZE);

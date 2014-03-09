@@ -169,7 +169,7 @@ void Model::DrawReferencePoints(const Mat& source, Mat& patternOrigin3D, int num
     namedWindow("DrawReferencePoints", CV_WINDOW_AUTOSIZE);
     imshow("DrawReferencePoints", view);
 
-    cout << "Coordinates of box's reference point in camera coordinates" << endl << translateVector << endl; 
+    cout << "Coordinates of box's reference point in camera coordinates" << endl << translateVector << endl;
 }
 
 Mat Model::Outline(const Mat&   source,
@@ -184,7 +184,7 @@ Mat Model::Outline(const Mat&   source,
 	line(result, Project(cornerPoints[1]), Project(cornerPoints[2]), color, 1, 8);
  	line(result, Project(cornerPoints[2]), Project(cornerPoints[3]), color, 1, 8);
 	line(result, Project(cornerPoints[0]), Project(cornerPoints[4]), color, 1, 8);
- 
+
  	line(result, Project(cornerPoints[4]), Project(cornerPoints[5]), color, 1, 8);
  	line(result, Project(cornerPoints[5]), Project(cornerPoints[6]), color, 1, 8);
 	line(result, Project(cornerPoints[6]), Project(cornerPoints[7]), color, 1, 8);
@@ -195,7 +195,7 @@ Mat Model::Outline(const Mat&   source,
 	line(result, Project(cornerPoints[2]), Project(cornerPoints[6]), color, 1, 8);
 	line(result, Project(cornerPoints[3]), Project(cornerPoints[7]), color, 1, 8);
 
-    
+
     if (isDrawControlPoints)
     {
 	    std::list<Mat>::iterator controlPointsIter = controlPoints.begin();
@@ -236,7 +236,7 @@ void Model::AddControlPointsFromTheEdge(int i, int j)
 	s = cornerPoints[i] + direction*companionPointsOffset*2;
 	companionPoints.push_back(s);
 	s.release();
-	
+
     p = cornerPoints[i] + direction*(1 - offset);
     controlPoints.push_back(p);
 	p.release();
@@ -286,8 +286,8 @@ void Model::updatePose(const Mat &solution)
 
 void Model::updatePose(const Mat& angle, const Mat& distance)
 {
-    translateVector += distance; 
-    rotationVector += angle;     
+    translateVector += distance;
+    rotationVector += angle;
 }
 
 std::list<Point2d> Model::GetProjectedControlPoints() const

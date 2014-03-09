@@ -184,10 +184,10 @@ int main(int argn, char* argv[])
     movementVector6D["bigTranslate"]         = (Mat_<double>(6,1) << 0, 0, 0, 2.0, 2.0, 2.0);
     movementVector6D["smallTranslate"]       = (Mat_<double>(6,1) << 0, 0, 0, 0.1, 0.1, -0.1);
     movementVector6D["mediumTranslate"]      = (Mat_<double>(6,1) << 0, 0, 0, -0.8, 0.8, -0.8);
-    movementVector6D["oneDirectionRotateZ"]  = (Mat_<double>(6,1) << 0, 0, CV_PI/56, 0.0, 0.0, 0.0); 
-    movementVector6D["oneDirectionRotateY"]  = (Mat_<double>(6,1) << 0, CV_PI/56, 0, 0.0, 0.0, 0.0); 
-    movementVector6D["oneDirectionRotateX"]  = (Mat_<double>(6,1) << CV_PI/56, 0, 0, 0.0, 0.0, 0.0); 
-    movementVector6D["oneDirectionRotateZs"] = (Mat_<double>(6,1) << 0, 0, CV_PI/120, 0.0, 0.0, 0.0); 
+    movementVector6D["oneDirectionRotateZ"]  = (Mat_<double>(6,1) << 0, 0, CV_PI/56, 0.0, 0.0, 0.0);
+    movementVector6D["oneDirectionRotateY"]  = (Mat_<double>(6,1) << 0, CV_PI/56, 0, 0.0, 0.0, 0.0);
+    movementVector6D["oneDirectionRotateX"]  = (Mat_<double>(6,1) << CV_PI/56, 0, 0, 0.0, 0.0, 0.0);
+    movementVector6D["oneDirectionRotateZs"] = (Mat_<double>(6,1) << 0, 0, CV_PI/120, 0.0, 0.0, 0.0);
 
 	Model model = (RapidTestingModel) GetHardcodedModel();
 
@@ -208,7 +208,7 @@ int main(int argn, char* argv[])
 	const double precisionFreshold = 1e-1;
 
     while(movie.ReadNextFrame(movieFrame))
-    {   
+    {
         frameNumber++;
 
         double precision = DBL_MAX;
@@ -222,7 +222,7 @@ int main(int argn, char* argv[])
 
 			Model prevModel = model;
             model = tracker.ProcessFrame(workFrame);
-			
+
 			precision = tracker.GetConvergenceMeasure(prevModel, model, NORM_INF);
 
 	        workFrame = model.Outline(workFrame, true, blueColor);
@@ -233,6 +233,6 @@ int main(int argn, char* argv[])
 	        waitKey();
         }
     }
-	
+
 	return 0;
 }

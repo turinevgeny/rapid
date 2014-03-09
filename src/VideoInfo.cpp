@@ -13,7 +13,7 @@ std::string VideoInfo::IntToString(int i)
 	return number.str();
 }
 
-FileStorage& operator<<(FileStorage& out, const VideoInfo& c) 
+FileStorage& operator<<(FileStorage& out, const VideoInfo& c)
 {
 	if (!c.IsInitialized())
 	{
