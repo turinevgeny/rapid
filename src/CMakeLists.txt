@@ -41,7 +41,6 @@ target_link_libraries(gtest ${CMAKE_THREAD_LIBS_INIT})
 ################################
 add_executable(
 	runUnitTests
-    test.cpp
     UtilTests.cpp
 )
 
