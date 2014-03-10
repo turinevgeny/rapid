@@ -1,12 +1,14 @@
+#include <iostream>
 #include <vector>
 
 #include <opencv2/core/core.hpp>
+
+#include "Util.hpp"
 
 /** od stands for Outliers Detection
  */
 namespace od
 {
-
 struct DetectionParams
 {
 	cv::Mat rot, trans;
@@ -70,5 +72,4 @@ private:
 		const std::vector<DataType> &allData,
 		const std::vector<unsigned> &useIndices );
 }; // end class
-
 }

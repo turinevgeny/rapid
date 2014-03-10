@@ -7,7 +7,7 @@ find_package( OpenCV REQUIRED )
 ################################
 # Core files
 ################################
-add_library( CORE_LIB Model.cpp RAPIDTracker.cpp VideoInfo.cpp )
+add_library( CORE_LIB Model.cpp RAPIDTracker.cpp VideoInfo.cpp Ransac.cpp )
 
 ################################
 # RAPID
@@ -41,7 +41,7 @@ target_link_libraries(gtest ${CMAKE_THREAD_LIBS_INIT})
 ################################
 add_executable(
 	runUnitTests
-    test.cpp
+    UtilTests.cpp
 )
 
 # For make-based builds defines make target named test.
@@ -49,7 +49,7 @@ add_executable(
 enable_testing()
 
 #Compile an executable that will run your unit tests and link it with gtest and gtest_main:
-target_link_libraries(runUnitTests gtest gtest_main ${OpenCV_LIBS})
+target_link_libraries(runUnitTests gtest gtest_main CORE_LIB ${OpenCV_LIBS})
 
 #Add a test which runs this executable (e.g., make test instruction)
 add_test(
