@@ -42,7 +42,9 @@ target_link_libraries(gtest ${CMAKE_THREAD_LIBS_INIT})
 add_executable(
 	runUnitTests
     UtilTests.cpp
+    LineFittingTests.cpp
 )
+target_link_libraries( runUnitTests CORE_LIB ${OpenCV_LIBS} )
 
 # For make-based builds defines make target named test.
 # For Visual Studio builds defines Visual Studio project named RUN_TESTS.

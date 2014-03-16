@@ -69,7 +69,7 @@ bool od::Ransac<DataType, ModelParametersType>::execute(
 
             // Safeguard against being stuck in this loop forever
             if (++count > maxDataTrials)
-            {				
+            {
                 std::cerr << "[RANSAC] Unable to select a non-degenerate data set" << std::endl;
                 return false;
             }
@@ -116,7 +116,7 @@ bool od::Ransac<DataType, ModelParametersType>::execute(
 
         // Safeguard against being stuck in this loop forever
         if (trialcount > maxIter)
-        {            
+        {
             std::cerr << "[RANSAC] Warning: maximum number of trials reached" << std::endl;
             return false;
         }
