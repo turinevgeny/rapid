@@ -28,6 +28,20 @@ public:
 			v[c] = static_cast<typename VecType::value_type>( rng.uniform(unif_min, unif_max) );
 	}
 
+    /** Returns a subset of [0 ... n] set
+        */
+    void drawUniformSubset(
+        const unsigned n,
+        std::vector<unsigned> &out_indices
+        )
+    {
+        out_indices.clear();
+
+        for(int i = 0; i < n; ++i)
+            if( rng() % 2 )
+                out_indices.push_back(i);
+    }
+
 private:
 	cv::RNG rng;
 };

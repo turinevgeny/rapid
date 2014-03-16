@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 #include <gtest/gtest.h>
 
@@ -24,4 +25,28 @@ TEST(RandomGenerator, drawUniformVector)
 		EXPECT_LE(vec[i], max);
 		EXPECT_GE(vec[i], min);
 	}
+}
+
+TEST(RandomGenerator, drawUniformSubset)
+{
+    util::RandomGenerator rng;
+
+    std::vector<unsigned> subset;
+
+    const size_t cardinality = 20;
+
+    rng.drawUniformSubset(cardinality, subset);
+
+    size_t subset_cardinality = subset.size();
+
+    std::sort ( subset.begin(), subset.end() );
+    std::vector<unsigned>::iterator fisrt_duplicate = std::unique ( subset.begin(), subset.end() );
+
+    EXPECT_TRUE(fisrt_duplicate == subset.end()) << "Found duplicates in subset indices";
+
+    for(int i = 0; i < subset.size(); i++)
+    {
+        EXPECT_LE(subset[i], cardinality) << "Found an index too large";
+        EXPECT_GE(subset[i], 0) << "Found a negative index";
+    }
 }
