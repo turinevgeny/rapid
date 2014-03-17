@@ -37,16 +37,51 @@ TEST(RandomGenerator, drawUniformSubset)
 
     rng.drawUniformSubset(cardinality, subset);
 
-    size_t subset_cardinality = subset.size();
+    std::sort ( subset.begin(), subset.end() );
+    std::vector<unsigned>::iterator fisrt_duplicate = std::unique ( subset.begin(), subset.end() );
+
+    EXPECT_TRUE(fisrt_duplicate == subset.end()) << "Found duplicates in subset indices";
+
+    for(size_t i = 0; i < subset.size(); i++)
+    {
+        EXPECT_LE(subset[i], cardinality) << "Found an index too large";
+        EXPECT_GE(subset[i], 0) << "Found a negative index";
+    }
+}
+
+TEST(swap, SwapTest)
+{
+    std::vector<unsigned> v;
+    v.push_back(-1);
+    v.push_back(1);
+
+    util::swap< std::vector<unsigned> >(v, 0, 1);
+
+    EXPECT_EQ(1, v[0]);
+    EXPECT_EQ(-1, v[1]);
+}
+
+TEST(RandomGenerator, drawUniformSubset_K_of_N)
+{
+    util::RandomGenerator rng;
+
+    std::vector<unsigned> subset;
+
+    const size_t n = 20;
+    const size_t k = 7;
+
+    rng.drawUniformSubset(n, k, subset);
+
+    EXPECT_EQ( k, subset.size() ) << "The cardinality of returned subset is unexpected";
 
     std::sort ( subset.begin(), subset.end() );
     std::vector<unsigned>::iterator fisrt_duplicate = std::unique ( subset.begin(), subset.end() );
 
     EXPECT_TRUE(fisrt_duplicate == subset.end()) << "Found duplicates in subset indices";
 
-    for(int i = 0; i < subset.size(); i++)
+    for(size_t i = 0; i < subset.size(); i++)
     {
-        EXPECT_LE(subset[i], cardinality) << "Found an index too large";
+        EXPECT_LE(subset[i], n) << "Found an index too large";
         EXPECT_GE(subset[i], 0) << "Found a negative index";
     }
 }

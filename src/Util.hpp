@@ -5,6 +5,13 @@
 
 namespace util
 {
+template <class VecType>
+void swap(VecType &v, unsigned i, unsigned j)
+{
+    VecType::value_type temp;
+    temp = v[i]; v[i] = v[j]; v[j] = temp;
+}
+
 class RandomGenerator
 {
 public:
@@ -37,11 +44,30 @@ public:
     {
         out_indices.clear();
 
-        for(int i = 0; i < n; ++i)
+        for(size_t i = 0; i < n; ++i)
             if( rng() % 2 )
                 out_indices.push_back(i);
     }
 
+    /** Returns random k elements of [0 ... n] set
+        */
+    void drawUniformSubset(
+        const unsigned n,
+        const unsigned k,
+        std::vector<unsigned> &out_indices
+        )
+    {
+        std::vector<unsigned> set(n);
+        
+        for(size_t i = 0; i < n; ++i)
+            set[i] = i;
+
+        for(size_t i = 0; i < k; ++i)
+            swap( set, i, i + rng() % (n-i) );
+
+        set.resize(k);
+        out_indices = set;
+    }
 private:
 	cv::RNG rng;
 };
