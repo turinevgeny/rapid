@@ -29,7 +29,7 @@ cv::Point2d ComputeLineParams(const cv::Point2d& p1, const cv::Point2d& p2)
 // yi - m * xi - b
 double ComputeLineDistance(const cv::Point2d& point, const cv::Point2d& model)
 {
-    return point.y - model.x * point.x - model.y;
+    return abs(point.y - model.x * point.x - model.y);
 }
 
 void LineFitFunctor(const std::vector<cv::Point2d> &allData,
@@ -63,8 +63,8 @@ void LineDistanceFunctor(const std::vector<cv::Point2d> &allData,
         if(currNumInliers > bestNumInliers)
         {
             out_bestModelIndex = idxModel;
+            bestNumInliers = currNumInliers;
         }
-        
     }
 
     for(int idxData=0; idxData < allData.size(); idxData++)

@@ -4,8 +4,6 @@
 #include "LineFitting.hpp"
 #include "Ransac.hpp"
 
-//using namespace cv;
-
 class LineFittingTest : public ::testing::Test
 {
 protected:
@@ -29,11 +27,6 @@ protected:
            maxIter);*/
    }
 
-   void TearDown()
-    {
-        allData.clear();
-        out_best_inliers.clear();
-    }
 
 protected:
    std::vector<cv::Point2d> allData;
@@ -70,7 +63,35 @@ TEST_F(LineFittingTest, LineFunctors)
     EXPECT_EQ(out_bestModelIndex, 1);
     EXPECT_EQ(out_inlierIndices.size(), 6);
 
-    lf::LineDistanceFunctor(allData, fitModels, 4, out_bestModelIndex, out_inlierIndices);
-    EXPECT_EQ(out_bestModelIndex, 0);
-    EXPECT_EQ(out_inlierIndices.size(), 7);
+    out_inlierIndices.clear();
+    lf::LineDistanceFunctor(allData, fitModels, 0.5, out_bestModelIndex, out_inlierIndices);
+    EXPECT_EQ(out_bestModelIndex, 1);
+    EXPECT_EQ(out_inlierIndices.size(), 4);
+
+    useIndices[0] = 6; useIndices[1] = 2;
+
+    lf::LineFitFunctor(allData, useIndices, fitModels);
+    EXPECT_EQ(allData[useIndices[0]], cv::Point2d(10,2));
+    EXPECT_EQ(allData[useIndices[1]], cv::Point2d(2,2));
+    ASSERT_EQ(fitModels.size(), 3);
+    EXPECT_EQ(fitModels[2].x, 0);
+    EXPECT_EQ(fitModels[2].y, 2);
+
+    out_inlierIndices.clear();
+    lf::LineDistanceFunctor(allData, fitModels, 1, out_bestModelIndex, out_inlierIndices);
+    EXPECT_EQ(out_bestModelIndex, 1);
+    EXPECT_EQ(out_inlierIndices.size(), 6);
+}
+
+TEST(LineFitting, ComputeLineDistance)
+{
+    double ld;
+    ld = lf::ComputeLineDistance(cv::Point2d(10,2),cv::Point2d(1,0));
+    EXPECT_EQ(ld, 8);
+    ld = lf::ComputeLineDistance(cv::Point2d(10,2),cv::Point2d(2,0));
+    EXPECT_EQ(ld, 18);
+    ld = lf::ComputeLineDistance(cv::Point2d(3,3),cv::Point2d(1,0));
+    EXPECT_EQ(ld, 0);
+    ld = lf::ComputeLineDistance(cv::Point2d(2,2),cv::Point2d(1,1));
+    EXPECT_EQ(ld, 1);
 }
