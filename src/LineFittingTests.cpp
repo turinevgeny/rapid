@@ -7,14 +7,14 @@
 class LineFittingTest : public ::testing::Test
 {
 protected:
-   void SetUp() 
+   void SetUp()
    {
        lf::FillData(allData);
    }
 protected:
    std::vector<cv::Point2d> allData;
 
-   //for execute 
+   //for execute
    std::vector<unsigned> out_best_inliers;
    cv::Point2d out_best_model;
 
@@ -60,7 +60,7 @@ TEST_F(LineFittingTest, LineFunctors)
     EXPECT_EQ(1, out_bestModelIndex) << incorrectBestModelIndex;
     EXPECT_EQ(7, out_inlierIndices.size()) << wrongNumInliers;
 
-    std::vector<unsigned> expected;  
+    std::vector<unsigned> expected;
     for(int i=0; i<7; i++)
         expected.push_back(i);
     EXPECT_EQ (expected, out_inlierIndices) << wrongInliersIndices;
@@ -91,15 +91,16 @@ TEST_F(LineFittingTest, LineFunctors)
 TEST_F(LineFittingTest, Execute)
 {
     const std::vector<cv::Point2d> allData_const(allData);
-    const double distanceThreshold = 0.1;
+    const double distanceThreshold = 1;
     const size_t minimumSizeSamplesToFit = 2;
     const double prob_good_sample = 0.99;
     const size_t maxIter = 2000;
 
     od::Ransac<cv::Point2d,cv::Point2d>::execute(
            allData_const,
-           /*(od::Ransac<cv::Point2d,cv::Point2d>::TRansacFitFunctor)*/lf::LineFitFunctor,
-           /*(od::Ransac<cv::Point2d,cv::Point2d>::TRansacDistanceFunctor)*/lf::LineDistanceFunctor,
+           lf::LineFitFunctor,
+           lf::LineDistanceFunctor,
+           lf::FalseLineDegenerateFunctor,
            distanceThreshold,
            minimumSizeSamplesToFit,
            out_best_inliers,
@@ -108,14 +109,14 @@ TEST_F(LineFittingTest, Execute)
            maxIter);
 
     //Error messages related to execute method
-    char unexpectedBestModel[] = {"Ransac didn't find expected model"};
+    char unexpectedBestModel[] = {"Ransac hasn't find expected model"};
     char unexpectedNumInliers[] = {"Ransac return unexpected number of inliers"};
     char unexpectedInliersIndices[] = {"Ransac return unexpected inliers indices"};
 
     EXPECT_EQ(cv::Point2d(1,0), out_best_model) << unexpectedBestModel;
     EXPECT_EQ(6, out_best_inliers.size()) << unexpectedNumInliers;
 
-    std::vector<unsigned> expected;  
+    std::vector<unsigned> expected;
     for(int i=0; i<6; i++)
         expected.push_back(i);
     EXPECT_EQ (expected, out_best_inliers) << unexpectedInliersIndices;
@@ -132,4 +133,20 @@ TEST(LineFitting, ComputeLineDistance)
     EXPECT_EQ(0, ld) << "incorrect distance. Point lies on the line";
     ld = lf::ComputeLineDistance(cv::Point2d(2,2),cv::Point2d(1,1));
     EXPECT_EQ(1, ld) << "incorrect distance";
+}
+
+TEST(LineFitting, euclideanDistance)
+{
+    double dist;
+    dist = lf::euclideanDistance(cv::Point2d(2,2), cv::Point2d(2,2));
+    EXPECT_EQ(0, dist) << "The distance between identical points is not equal to zero";
+
+    dist = lf::euclideanDistance(cv::Point2d(-1,0), cv::Point2d(2,0));
+    EXPECT_EQ(3, dist) << "Incorrect distance along the Y axis";
+
+    dist = lf::euclideanDistance(cv::Point2d(0,2), cv::Point2d(0,-1));
+    EXPECT_EQ(3, dist) << "Incorrect distance along the X axis";
+
+    dist = lf::euclideanDistance(cv::Point2d(100,100), cv::Point2d(101,101));
+    EXPECT_EQ(cv::sqrt(2.0), dist) << "Incorrect distance";
 }

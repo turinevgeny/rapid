@@ -76,4 +76,16 @@ void LineDistanceFunctor(const std::vector<cv::Point2d> &allData,
     }
 }
 
+// d = sqrt( (x1-x2)^2 + (y1-y2)^2 )
+double euclideanDistance(cv::Point2d p1, cv::Point2d p2)
+{
+    return cv::norm(p1-p2);
+}
+
+bool FalseLineDegenerateFunctor( const std::vector<cv::Point2d> &allData,
+                            const std::vector<unsigned> &useIndices)
+{
+    return false;
+}
+
 }
