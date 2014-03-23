@@ -7,26 +7,10 @@
 class LineFittingTest : public ::testing::Test
 {
 protected:
-   void SetUp() {
+   void SetUp() 
+   {
        lf::FillData(allData);
-       const double distanceThreshold = 0.1;
-       const size_t minimumSizeSamplesToFit = 2;
-       const double prob_good_sample = 0.99;
-       const size_t maxIter = 2000;
-       const std::vector<cv::Point2d> allData_const(allData);
-
-       /*od::Ransac<cv::Point2d,cv::Point2d>::execute(
-           allData_const,
-           lf::LineFitFunctor,
-           lf::LineDistanceFunctor,
-           distanceThreshold,
-           minimumSizeSamplesToFit,
-           out_best_inliers,
-           out_best_model,
-           prob_good_sample,
-           maxIter);*/
    }
-
 protected:
    std::vector<cv::Point2d> allData;
 
@@ -102,6 +86,39 @@ TEST_F(LineFittingTest, LineFunctors)
     EXPECT_EQ(6, out_inlierIndices.size()) << wrongNumInliers;
     expected.pop_back();
     EXPECT_EQ (expected, out_inlierIndices) << wrongInliersIndices;
+}
+
+TEST_F(LineFittingTest, Execute)
+{
+    const std::vector<cv::Point2d> allData_const(allData);
+    const double distanceThreshold = 0.1;
+    const size_t minimumSizeSamplesToFit = 2;
+    const double prob_good_sample = 0.99;
+    const size_t maxIter = 2000;
+
+    od::Ransac<cv::Point2d,cv::Point2d>::execute(
+           allData_const,
+           /*(od::Ransac<cv::Point2d,cv::Point2d>::TRansacFitFunctor)*/lf::LineFitFunctor,
+           /*(od::Ransac<cv::Point2d,cv::Point2d>::TRansacDistanceFunctor)*/lf::LineDistanceFunctor,
+           distanceThreshold,
+           minimumSizeSamplesToFit,
+           out_best_inliers,
+           out_best_model,
+           prob_good_sample,
+           maxIter);
+
+    //Error messages related to execute method
+    char unexpectedBestModel[] = {"Ransac didn't find expected model"};
+    char unexpectedNumInliers[] = {"Ransac return unexpected number of inliers"};
+    char unexpectedInliersIndices[] = {"Ransac return unexpected inliers indices"};
+
+    EXPECT_EQ(cv::Point2d(1,0), out_best_model) << unexpectedBestModel;
+    EXPECT_EQ(6, out_best_inliers.size()) << unexpectedNumInliers;
+
+    std::vector<unsigned> expected;  
+    for(int i=0; i<6; i++)
+        expected.push_back(i);
+    EXPECT_EQ (expected, out_best_inliers) << unexpectedInliersIndices;
 }
 
 TEST(LineFitting, ComputeLineDistance)
