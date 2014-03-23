@@ -7,7 +7,7 @@ find_package( OpenCV REQUIRED )
 ################################
 # Core files
 ################################
-add_library( CORE_LIB Model.cpp RAPIDTracker.cpp VideoInfo.cpp Ransac.cpp )
+add_library( CORE_LIB Model.cpp RAPIDTracker.cpp VideoInfo.cpp Ransac.hpp )
 
 ################################
 # RAPID
