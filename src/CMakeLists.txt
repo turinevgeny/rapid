@@ -7,7 +7,8 @@ find_package( OpenCV REQUIRED )
 ################################
 # Core files
 ################################
-add_library( CORE_LIB Model.cpp RAPIDTracker.cpp VideoInfo.cpp Ransac.hpp )
+set( CORE_HEADERS_LIB Ransac.hpp Model.hpp RAPIDTracker.hpp VideoInfo.hpp VideoInfoBase.hpp )
+add_library( CORE_LIB Model.cpp RAPIDTracker.cpp VideoInfo.cpp ${CORE_HEADERS_LIB} )
 
 ################################
 # RAPID
@@ -39,10 +40,12 @@ target_link_libraries(gtest ${CMAKE_THREAD_LIBS_INIT})
 ################################
 # Tests
 ################################
+set( TEST_HEADERS Util.hpp LineFitting.hpp )
 add_executable(
 	runUnitTests
     UtilTests.cpp
     LineFittingTests.cpp
+	${TEST_HEADERS}
 )
 target_link_libraries( runUnitTests CORE_LIB ${OpenCV_LIBS} )
 
