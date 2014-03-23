@@ -8,7 +8,7 @@ namespace util
 template <class VecType>
 void swap(VecType &v, unsigned i, unsigned j)
 {
-    VecType::value_type temp;
+    typename VecType::value_type temp;
     temp = v[i]; v[i] = v[j]; v[j] = temp;
 }
 
