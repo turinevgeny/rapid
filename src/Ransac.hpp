@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <ctime>
 
 #include <opencv2/core/core.hpp>
 
@@ -97,6 +98,8 @@ bool od::Ransac<DataType, ModelParametersType>::execute(
 
     const size_t maxDataTrials = 100; // Maximum number of attempts to select a non-degenerate data set
 
+    util::RandomGenerator randomGenerator(time(NULL));
+
     out_best_inliers.clear();
 
     size_t trialcount = 0;
@@ -119,7 +122,6 @@ bool od::Ransac<DataType, ModelParametersType>::execute(
             // Generate s random indices in the range 1..npts
             ind.resize(minimumSizeSamplesToFit);
 
-            util::RandomGenerator randomGenerator;
             // The +0.99... is due to the floor rounding afterwards when converting from random double samples to size_t
             randomGenerator.drawUniformVector(ind, 0.0, Npts - 1 + 0.999999);
 
