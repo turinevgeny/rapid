@@ -69,7 +69,7 @@ public:
 		);
 
 private:
-	static bool TrueDegenerativeFunction(
+	static bool FalseDegenerateFunction(
 		const std::vector<DataType> &allData,
 		const std::vector<unsigned> &useIndices );
 }; // end class
@@ -214,7 +214,7 @@ bool od::Ransac<DataType, ModelParametersType>::execute(
         data,
         fit_func,
         dist_func,
-        TrueDegenerativeFunction,
+        FalseDegenerateFunction,
         distanceThreshold,
         minimumSizeSamplesToFit,
         out_best_inliers,
@@ -224,9 +224,9 @@ bool od::Ransac<DataType, ModelParametersType>::execute(
 }
 
 template <typename DataType, typename ModelParametersType>
-bool od::Ransac<DataType, ModelParametersType>::TrueDegenerativeFunction(
+bool od::Ransac<DataType, ModelParametersType>::FalseDegenerateFunction(
     const std::vector<DataType> &allData,
     const std::vector<unsigned> &useIndices )
 {
-    return true;
+    return false;
 }
