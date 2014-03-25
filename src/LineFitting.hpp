@@ -4,6 +4,38 @@
  */
 namespace lf
 {
+void FillAlmostUncontaminatedData(std::vector<cv::Point2d> &allData)
+{
+    allData.push_back(cv::Point2d(0,0));
+    allData.push_back(cv::Point2d(1,1));
+    allData.push_back(cv::Point2d(2,2));
+    allData.push_back(cv::Point2d(3,3));
+    allData.push_back(cv::Point2d(4,4));
+    allData.push_back(cv::Point2d(5,5));
+
+    allData.push_back(cv::Point2d(9,9));
+    allData.push_back(cv::Point2d(10,10));
+    allData.push_back(cv::Point2d(-2,-2));
+    allData.push_back(cv::Point2d(-3,-3));
+    allData.push_back(cv::Point2d(-5,-5));
+    allData.push_back(cv::Point2d(-4,-4));
+
+    // outliers
+    allData.push_back(cv::Point2d(-10,10));
+    allData.push_back(cv::Point2d(10,-10));
+}
+
+//TODO: to implemenent random generator of outliers at the square [ -10,-10; 10,10]
+void AddOutliers(std::vector<cv::Point2d> &allData)
+{
+    allData.push_back(cv::Point2d(-5,3));
+    allData.push_back(cv::Point2d(0,1));
+    allData.push_back(cv::Point2d(2,1));
+    allData.push_back(cv::Point2d(4,1));
+    allData.push_back(cv::Point2d(-4,1));
+    allData.push_back(cv::Point2d(-5,-3));
+}
+
 void FillData(std::vector<cv::Point2d> &allData)
 {
     allData.push_back(cv::Point2d(0,0));
@@ -81,11 +113,4 @@ double euclideanDistance(cv::Point2d p1, cv::Point2d p2)
 {
     return cv::norm(p1-p2);
 }
-
-bool FalseLineDegenerateFunctor( const std::vector<cv::Point2d> &allData,
-                            const std::vector<unsigned> &useIndices)
-{
-    return false;
-}
-
 }
