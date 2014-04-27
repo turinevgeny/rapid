@@ -51,6 +51,7 @@ protected:
 	void            AddControlPointsFromTheEdge(int i, int j);
 
 	friend class RAPIDTracker;
+	friend class RAPIDTrackerExperiment;
 };
 
 #endif
