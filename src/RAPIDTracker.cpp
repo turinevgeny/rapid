@@ -63,7 +63,6 @@ bool RAPIDTracker::FindPoints(Point2d controlPoint,
 		foundDirection=DOWNWARD_DIAGONAL;
         dx1=-1; dy1=-1;
 		dx2= 1; dy2= 1;
-
 	}
 	if( (tangentAlpha < top) && (tangentAlpha > bottom) )
 	{
@@ -243,7 +242,7 @@ Model RAPIDTracker::ProcessFrame(const Mat& frame)
  	return model;
 }
 
-double RAPIDTracker::GetConvergenceMeasure(const Model& model1, const Model& model2, int normType)
+double RAPIDTracker::GetConvergenceMeasure(const Model& model1, const Model& model2, int normType) const
 {
 	std::list<Point2d> model1Points = model1.GetProjectedControlPoints();
 	std::list<Point2d> model2Points = model2.GetProjectedControlPoints();
