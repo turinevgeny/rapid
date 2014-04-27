@@ -1,9 +1,9 @@
+#pragma once
+
 #include <iostream>
 #include <vector>
 #include <limits>
 #include <ctime>
-
-#include <opencv2/core/core.hpp>
 
 #include "Util.hpp"
 
@@ -11,11 +11,6 @@
  */
 namespace od
 {
-struct DetectionParams
-{
-	cv::Mat rot, trans;
-};
-
 #define Max_Iter 2000
 #define Prob_Good_Sample 0.999
 
@@ -69,12 +64,12 @@ public:
 		const size_t				maxIter = Max_Iter
 		);
 
-private:
+protected:
 	static bool FalseDegenerateFunction(
 		const std::vector<DataType> &allData,
 		const std::vector<unsigned> &useIndices );
 }; // end class
-}
+}  // end namespace
 
 template <typename DataType, typename ModelParametersType>
 bool od::Ransac<DataType, ModelParametersType>::execute(
@@ -91,6 +86,7 @@ bool od::Ransac<DataType, ModelParametersType>::execute(
     )
 {
     CV_Assert(minimumSizeSamplesToFit >= 1);
+    CV_Assert(prob_good_sample >= 0 && prob_good_sample <= 1);
 
     const size_t Npts = data.size();
 

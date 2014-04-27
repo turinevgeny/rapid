@@ -1,5 +1,4 @@
-#ifndef __VIDEO_INFO_BASE_H
-#define __VIDEO_INFO_BASE_H
+#pragma once
 
 #include <opencv2/core/core.hpp>
 
@@ -12,5 +11,3 @@ public:
 
 	virtual ~VideoInfoInterface() {}
 };
-
-#endif

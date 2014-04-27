@@ -1,5 +1,4 @@
-#ifndef __RAPIDTRacker_H
-#define __RAPIDTRacker_H
+#pragma once
 
 #include <opencv2/core/core.hpp>
 
@@ -25,5 +24,3 @@ private:
                            cv::Point2d& foundPoint,
                            cv::Point2d& foundPoint2);
 };
-
-#endif

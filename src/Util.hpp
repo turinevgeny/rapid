@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <sstream>
 
@@ -58,7 +60,7 @@ public:
         )
     {
         std::vector<unsigned> set(n);
-        
+
         for(size_t i = 0; i < n; ++i)
             set[i] = i;
 

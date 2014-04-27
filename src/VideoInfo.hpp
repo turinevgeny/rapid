@@ -1,5 +1,4 @@
-#ifndef __VIDEO_INFO_H
-#define __VIDEO_INFO_H
+#pragma once
 
 #include <opencv2/core/core.hpp>
 
@@ -40,5 +39,3 @@ private:
 private:
 	static std::string IntToString(int i);
 };
-
-#endif

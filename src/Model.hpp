@@ -1,5 +1,4 @@
-#ifndef __MODEL_H
-#define __MODEL_H
+#pragma once
 
 #include <list>
 
@@ -52,5 +51,3 @@ protected:
 
 	friend class RAPIDTracker;
 };
-
-#endif
