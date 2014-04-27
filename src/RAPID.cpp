@@ -10,6 +10,7 @@
 #include "Model.hpp"
 // Algorithm wrapper
 #include "RAPIDTracker.hpp"
+#include "RAPIDTrackerExperiment.hpp"
 // VideoInfo struct
 #include "VideoInfo.hpp"
 
@@ -86,6 +87,7 @@ int main(int argn, char* argv[])
 	const int PointsPerEdge = 5;
     Model model(videoInfo.GetCornerPoints(), PointsPerEdge, Camera_Matrix, Distortion_Coefficients, rVec, tVec);
     RAPIDTracker tracker(model);
+	//RAPIDTrackerExperiment tracker(model);
 
     const std::string nextWindowName = "Next";
     const std::string currentWindowName = "Current";
