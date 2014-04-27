@@ -49,5 +49,6 @@ protected:
 	virtual void	SetControlPoints();						// fills control points list with points evenly located on the edges
 	void            AddControlPointsFromTheEdge(int i, int j);
 
-	friend class RAPIDTracker;
+    friend class RAPIDTracker;
+	friend class Tracker;
 };
