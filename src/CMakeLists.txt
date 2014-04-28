@@ -7,8 +7,24 @@ find_package( OpenCV REQUIRED )
 ################################
 # Core files
 ################################
-set( CORE_HEADERS_LIB Ransac.hpp Model.hpp RAPIDTracker.hpp RAPIDTrackerExperiment.hpp VideoInfo.hpp VideoInfoBase.hpp Util.hpp Tracker.hpp )
-add_library( CORE_LIB Model.cpp RAPIDTracker.cpp RAPIDTrackerExperiment.cpp VideoInfo.cpp Tracker.cpp ${CORE_HEADERS_LIB} )
+set( CORE_HEADERS_LIB
+	Ransac.hpp
+	Model.hpp
+	RAPIDTracker.hpp
+	RAPIDTrackerExperiment.hpp
+	VideoInfo.hpp
+	VideoInfoBase.hpp
+	Util.hpp
+	Tracker.hpp
+	RansacTracker.hpp )
+add_library( CORE_LIB
+	${CORE_HEADERS_LIB}
+	Model.cpp
+	RAPIDTracker.cpp
+	RAPIDTrackerExperiment.cpp
+	VideoInfo.cpp
+	Tracker.cpp 
+	RansacTracker.cpp )
 
 ################################
 # RAPID

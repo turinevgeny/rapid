@@ -23,6 +23,18 @@ public:
     double GetConvergenceMeasure(const Model& model1, const Model& model2, int normType) const;
 	virtual cv::Mat	ExtractEdges(const cv::Mat& image) const;
 
+    virtual void GetAndDrawPointsForSolvePnP(
+        const cv::Mat& frame,
+        std::vector<cv::Point2d>& out_foundBoxPoints2D,
+        std::vector<cv::Point3d>& out_modelPoints3D);
+
+    virtual void RunSolvePnP(
+        const std::vector<cv::Point2d> foundBoxPoints2D,
+        const std::vector<cv::Point3d> modelPoints3D,
+        cv::Mat& out_rvec,
+        cv::Mat& out_tvec) const;
+
+    virtual Model ProcessFrame(const cv::Mat& frame);
 protected:
     bool FindPoints(cv::Point2d controlPoint,
         cv::Point2d companionPoint,
