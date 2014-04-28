@@ -49,18 +49,6 @@ TEST(RandomGenerator, drawUniformSubset)
     }
 }
 
-TEST(swap, SwapTest)
-{
-    std::vector<unsigned> v;
-    v.push_back(-1);
-    v.push_back(1);
-
-    util::swap< std::vector<unsigned> >(v, 0, 1);
-
-    EXPECT_EQ(1, v[0]);
-    EXPECT_EQ(-1, v[1]);
-}
-
 TEST(RandomGenerator, drawUniformSubset_K_of_N)
 {
     util::RandomGenerator rng;

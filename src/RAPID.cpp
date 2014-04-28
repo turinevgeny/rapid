@@ -28,8 +28,8 @@ A Video Rate Object Tracker\n\
 Attitude and position determination of a known 3D object\n\
 Usage:\n\
 ./RAPID VideoInfoXmlFile numberOfFirstFrame\n\
-VideoInfoXmlFile - XML or YAML file containing video and model information;\n\
-numberOfFirstFrame - Tracking algorithm starts with a given frame in the video.\n\
+\tVideoInfoXmlFile - XML or YAML file containing video and model information;\n\
+\tnumberOfFirstFrame - Tracking algorithm starts with a given frame in the video.\n\
 --------------------------------------------------------------------------\n\
 	" << endl;
 }

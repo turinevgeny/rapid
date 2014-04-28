@@ -2,18 +2,12 @@
 
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #include <opencv2/core/core.hpp>
 
 namespace util
 {
-template <class VecType>
-void swap(VecType &v, unsigned i, unsigned j)
-{
-    typename VecType::value_type temp;
-    temp = v[i]; v[i] = v[j]; v[j] = temp;
-}
-
 class RandomGenerator
 {
 public:
@@ -65,7 +59,7 @@ public:
             set[i] = i;
 
         for(size_t i = 0; i < k; ++i)
-            swap( set, i, i + rng() % (n-i) );
+            std::swap( set[i], set[i + rng() % (n-i)] );
 
         set.resize(k);
         out_indices = set;
