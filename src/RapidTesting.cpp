@@ -14,6 +14,7 @@
 // Algorithm wrapper
 #include "RAPIDTracker.hpp"
 #include "RansacTracker.hpp"
+#include "RAPIDTrackerExperiment.hpp"
 
 using std::cout;
 using std::cerr;
@@ -27,6 +28,19 @@ public:
 	RAPIDTestingTracker(Model& model) : RAPIDTracker(model) { }
 
 	virtual cv::Mat	ExtractEdges(const cv::Mat& image) const
+	{
+		Mat edges;
+		cvtColor(image, edges, CV_BGR2GRAY);
+		return edges;
+	}
+};
+
+class RAPIDTestingTrackerExperiment : public RAPIDTrackerExperiment
+{
+public:
+	RAPIDTestingTrackerExperiment(Model& model) : RAPIDTrackerExperiment(model) { }
+
+    virtual cv::Mat	ExtractEdges(const cv::Mat& image) const
 	{
 		Mat edges;
 		cvtColor(image, edges, CV_BGR2GRAY);
@@ -203,7 +217,8 @@ int main(int argn, char* argv[])
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
 	//movie.Play();
     //RAPIDTestingTracker tracker(model);
-    RansacTracker tracker(model, 10, 0.5, 1);
+    //RansacTracker tracker(model, 10, 0.5, 1);
+    RAPIDTestingTrackerExperiment tracker(model);
 
     Mat movieFrame;
     int frameNumber = 0;
