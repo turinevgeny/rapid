@@ -25,12 +25,12 @@ public:
 
     virtual void GetAndDrawPointsForSolvePnP(
         const cv::Mat& frame,
-        std::vector<cv::Point2d>& out_foundBoxPoints2D,
-        std::vector<cv::Point3d>& out_modelPoints3D);
+        std::vector<cv::Point2f>& out_foundBoxPoints2D,
+        std::vector<cv::Point3f>& out_modelPoints3D);
 
     virtual void RunSolvePnP(
-        const std::vector<cv::Point2d> foundBoxPoints2D,
-        const std::vector<cv::Point3d> modelPoints3D,
+        const std::vector<cv::Point2f> foundBoxPoints2D,
+        const std::vector<cv::Point3f> modelPoints3D,
         cv::Mat& out_rvec,
         cv::Mat& out_tvec) const;
 

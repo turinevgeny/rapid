@@ -13,6 +13,7 @@
 #include "Model.hpp"
 // Algorithm wrapper
 #include "RAPIDTracker.hpp"
+#include "RansacTracker.hpp"
 
 using std::cout;
 using std::cerr;
@@ -78,7 +79,7 @@ Model GetHardcodedModel()
     angle["default"] = CV_PI/2 - acos(100/a);
     angle["north_east"] = CV_PI - acos(100/a);
 
-	const double alpha = angle["north_east"];
+	const double alpha = angle["default"];
 
 	const Mat rotationMatrix = (Mat_<double>(3,3) <<  cos(alpha), 0, sin(alpha),
 		0,          1, 0,
@@ -108,7 +109,7 @@ Model GetHardcodedModel()
     tVec["default"] = (Mat_<double>(3,1) << -18, 30, 200);
     tVec["north_east"] = (Mat_<double>(3,1) << 90, 10, 300);
 
-	const Mat translateVector = tVec["north_east"];
+	const Mat translateVector = tVec["default"];
 
 	Model model(cornerPoints, pointsPerEdge, cameraMatrix, distortionCoefficients, rotationVector, translateVector);
 
@@ -197,11 +198,12 @@ int main(int argn, char* argv[])
 	std::list<Mat> fakeMovieScenario;
 
     for(int i=0;i<1000;i++)
-		fakeMovieScenario.push_back(movementVector6D["oneDirectionRotateZ"]);
+		fakeMovieScenario.push_back(movementVector6D["bigTranslate"]);
 
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
 	//movie.Play();
-    RAPIDTestingTracker tracker(model);
+    //RAPIDTestingTracker tracker(model);
+    RansacTracker tracker(model, 10, 0.5, 1);
 
     Mat movieFrame;
     int frameNumber = 0;
@@ -233,7 +235,7 @@ int main(int argn, char* argv[])
 
             Mat temp = Mat::zeros(3, 1, CV_64F);//Fake point of pattern
             model.DrawReferencePoints(movieFrame, temp, frameNumber, i);
-	        waitKey();
+	        waitKey(100);
         }
     }
 

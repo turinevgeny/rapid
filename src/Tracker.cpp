@@ -72,7 +72,7 @@ bool Tracker::FindPoints(Point2d controlPoint,
     double bottom = tan(beta/2);
 
     Direction foundDirection;
-    int dx1,dy1,dx2,dy2;
+    int dx1=0,dy1=0,dx2=0,dy2=0;
 
     if( (tangentAlpha > (-1)*top) && (tangentAlpha < (-1)*bottom) )
     {
@@ -202,8 +202,8 @@ bool Tracker::FindPoints(Point2d controlPoint,
 
 void Tracker::GetAndDrawPointsForSolvePnP(
     const Mat& frame,
-    std::vector<Point2d>& out_foundBoxPoints2D,
-    std::vector<Point3d>& out_modelPoints3D)
+    std::vector<Point2f>& out_foundBoxPoints2D,
+    std::vector<Point3f>& out_modelPoints3D)
 {
     Mat result = frame.clone();
 
@@ -220,7 +220,7 @@ void Tracker::GetAndDrawPointsForSolvePnP(
         Point2d s = model.Project(*companionPointsIter);
         if (FindPoints(r, s, edges, foundPoint, foundPoint2))
         {
-            out_foundBoxPoints2D.push_back(foundPoint);
+            out_foundBoxPoints2D.push_back((Point2f)foundPoint);
 
             circle(result, foundPoint, 4, Scalar(0,0,255));
             circle(result, foundPoint2, 4, Scalar(255,0,255));
@@ -248,8 +248,8 @@ void Tracker::GetAndDrawPointsForSolvePnP(
 }
 
 void Tracker::RunSolvePnP(
-    const std::vector<Point2d> foundBoxPoints2D,
-    const std::vector<Point3d> modelPoints3D,
+    const std::vector<Point2f> foundBoxPoints2D,
+    const std::vector<Point3f> modelPoints3D,
     Mat& out_rvec,
     Mat& out_tvec) const
 {
@@ -261,8 +261,8 @@ void Tracker::RunSolvePnP(
 
 Model Tracker::ProcessFrame(const Mat& frame)
 {
-    std::vector<Point2d> foundBoxPoints2D;
-    std::vector<Point3d> modelPoints3D;
+    std::vector<Point2f> foundBoxPoints2D;
+    std::vector<Point3f> modelPoints3D;
 
     GetAndDrawPointsForSolvePnP(frame, foundBoxPoints2D, modelPoints3D);
 

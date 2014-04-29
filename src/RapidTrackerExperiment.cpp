@@ -13,21 +13,17 @@ using namespace cv;
 
 RAPIDTrackerExperiment::RAPIDTrackerExperiment(Model& _model)
 	:RAPIDTracker(_model)
-{
-	file.open ("../others/matlab_workspace/rvec_and_tvec.txt");
-}
+{}
 
 RAPIDTrackerExperiment::~RAPIDTrackerExperiment()
-{
-	file.close();
-}
+{}
 
 void RAPIDTrackerExperiment::getSubVectors(
-	const std::vector<Point3d> modelPoints3D, 
-	const std::vector<Point2d> foundBoxPoints2D, 
+	const std::vector<Point3f> modelPoints3D, 
+	const std::vector<Point2f> foundBoxPoints2D, 
 	const std::vector<unsigned> subset, 
-	std::vector<Point3d> &out_subModelPoints3D,
-	std::vector<Point2d> &out_subFoundBoxPoints2D)
+	std::vector<Point3f> &out_subModelPoints3D,
+	std::vector<Point2f> &out_subFoundBoxPoints2D) const
 {
 	for (int i = 0; i < subset.size(); i++)
 	{
@@ -37,22 +33,25 @@ void RAPIDTrackerExperiment::getSubVectors(
 }
 
 void RAPIDTrackerExperiment::RunSolvePnP(
-	const std::vector<Point2d> foundBoxPoints2D,
-    const std::vector<Point3d> modelPoints3D,
+	const std::vector<Point2f> foundBoxPoints2D,
+    const std::vector<Point3f> modelPoints3D,
 	Mat& out_rvec,
-	Mat& out_tvec)
+	Mat& out_tvec) const
 {
 	int n = model.controlPoints.size();
 	int k = n / 2;
 	util::RandomGenerator rng;
+
+    std::ofstream file;
+    file.open ("../others/matlab_workspace/rvec_and_tvec.txt");
 
 	for (int i = 0; i < n; i++)
 	{
 		std::vector<unsigned> subset;
 		rng.drawUniformSubset(n, k, subset);
 
-		std::vector<Point3d> subModelPoints3D;
-		std::vector<Point2d> subFoundBoxPoints2D;
+		std::vector<Point3f> subModelPoints3D;
+		std::vector<Point2f> subFoundBoxPoints2D;
 
 		getSubVectors(modelPoints3D, foundBoxPoints2D, subset, subModelPoints3D, subFoundBoxPoints2D);
 
@@ -64,10 +63,13 @@ void RAPIDTrackerExperiment::RunSolvePnP(
 		cout << "---(SolvePnP) delta rotate vector" << endl << delta_rvec<< endl;
 		cout << "---(SolvePnP) delta translate vector=" << endl << delta_tvec << endl << endl;
 
-		for(int i=0; i<3; i++)
-			file << delta_rvec.at<double>(i, 0) << ", ";
-		for(int i=0; i<2; i++)
-			file << delta_tvec.at<double>(i, 0) << ", ";
-		file << delta_tvec.at<double>(2, 0) << endl;
+        for(int i=0; i<3; i++)
+	        file << delta_rvec.at<double>(i, 0) << ", ";
+        for(int i=0; i<2; i++)
+    	    file << delta_tvec.at<double>(i, 0) << ", ";
+    	file << delta_tvec.at<double>(2, 0) << endl;
+		
 	}
+
+    file.close();
 }

@@ -12,8 +12,8 @@ public:
         int minInliersCount = 100);
 
     virtual void RunSolvePnP(
-        const std::vector<cv::Point2d> foundBoxPoints2D,
-        const std::vector<cv::Point3d> modelPoints3D,
+        const std::vector<cv::Point2f> foundBoxPoints2D,
+        const std::vector<cv::Point3f> modelPoints3D,
         cv::Mat& out_rvec,
         cv::Mat& out_tvec) const;
 private:

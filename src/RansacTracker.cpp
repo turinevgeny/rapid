@@ -17,8 +17,8 @@ RansacTracker::RansacTracker(
 { }
 
 void RansacTracker::RunSolvePnP(
-    const std::vector<Point2d> foundBoxPoints2D,
-    const std::vector<Point3d> modelPoints3D,
+    const std::vector<Point2f> foundBoxPoints2D,
+    const std::vector<Point3f> modelPoints3D,
     Mat& out_rvec,
     Mat& out_tvec) const
 {
