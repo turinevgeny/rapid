@@ -94,7 +94,8 @@ int main(int argn, char* argv[])
 
     //RAPIDTracker tracker(model, isLogsEnabled);
 	//RAPIDTrackerExperiment tracker(model, isLogsEnabled);
-    RansacTracker tracker(model, isLogsEnabled, 10, 0.5, 1);
+    //RansacTracker tracker(model, isLogsEnabled, 10, 0.5, 1);
+    RansacTracker tracker(model, isLogsEnabled, 100, 8, 20); // correct definition during the whole video (test_small_25.MOV)
 
     const std::string nextWindowName = "Next";
     const std::string currentWindowName = "Current";
@@ -124,7 +125,7 @@ int main(int argn, char* argv[])
 	        imshow(nextWindowName, workFrame);
 
             model.DrawReferencePoints(movieFrame, patternOrigin3D, cap.get(CV_CAP_PROP_POS_FRAMES), i);
-	        waitKey(100);
+	        waitKey(1);
 		}
 	}
 
