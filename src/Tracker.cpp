@@ -4,17 +4,20 @@ using std::cout;
 using std::endl;
 using namespace cv;
 
-Mat Tracker::ExtractEdges(const Mat& image) const
+void Tracker::GetAndDrawCanny(Mat& edges) const
 {
-    Mat edges;
-    cvtColor(image, edges, CV_BGR2GRAY);
-
     GaussianBlur(edges, edges, Size(7,7), 1.5, 1.5);
     Canny(edges, edges, 20, 100, 3);
 
     namedWindow("canny", CV_WINDOW_AUTOSIZE);
     imshow("canny",edges);
+}
 
+Mat Tracker::ExtractEdges(const Mat& image) const
+{
+    Mat edges;
+    cvtColor(image, edges, CV_BGR2GRAY);
+    GetAndDrawCanny(edges);
     return edges;
 }
 

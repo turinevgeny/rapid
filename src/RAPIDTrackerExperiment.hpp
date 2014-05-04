@@ -18,9 +18,7 @@ public:
 		cv::Mat& out_rvec,
 		cv::Mat& out_tvec) const;
 	RAPIDTrackerExperiment::~RAPIDTrackerExperiment();
-    friend std::ofstream& operator<<(std::ofstream file, const cv::Mat& vector);
 private:
-    void writeVectors(const cv::Mat& rvec, const cv::Mat& tvec);
 	void getSubVectors(
 		const std::vector<cv::Point3f> modelPoints3D, 
 		const std::vector<cv::Point2f> foundBoxPoints2D, 

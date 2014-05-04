@@ -22,6 +22,7 @@ public:
     { }
     double GetConvergenceMeasure(const Model& model1, const Model& model2, int normType) const;
 	virtual cv::Mat	ExtractEdges(const cv::Mat& image) const;
+    virtual void GetAndDrawCanny(cv::Mat& edges) const;
 
     virtual void GetAndDrawPointsForSolvePnP(
         const cv::Mat& frame,
