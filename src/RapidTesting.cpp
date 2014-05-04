@@ -207,9 +207,16 @@ int main(int argn, char* argv[])
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
 	//movie.Play();
 
-    //RansacTracker tracker(model, 10, 0.5, 1);
-    RAPIDTestingTracker tracker(model);
+    //RAPIDTestingTracker tracker(model);
     //RAPIDTestingTrackerExperiment tracker(model);
+
+    //RansacTracker tracker(model, 10, 0.5, 1); // crash occurs on 2 frame
+    //RansacTracker tracker(model, 10, 8, 10); // crash occurs on 6 frame
+    //RansacTracker tracker(model, 10, 8, 20); // crash occurs on 47 frame
+    RansacTracker tracker(model, 100, 8, 20); // works without crashes as long as there will be no points (119 frame)
+    //RansacTracker tracker(model, 100, 8, 5); // incorrect defenition of pose since 32 frame, but interesting to see
+    //RansacTracker tracker(model, 100, 0.5, 20); // incorrect defenition of pose since 15 frame (crash on 22), but interesting to see
+    //RansacTracker tracker(model, 1000, 0.5, 20); // incorrect defenition of pose since 15 frame. Lasts much longer
 
     Mat movieFrame;
     int frameNumber = 0;
