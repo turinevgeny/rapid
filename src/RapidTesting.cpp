@@ -232,6 +232,8 @@ int main(int argn, char* argv[])
     movementVector6D["smallTranslate"]       = (Mat_<double>(6,1) << 0, 0, 0, 0.1, 0.1, -0.1);
     movementVector6D["mediumTranslate"]      = (Mat_<double>(6,1) << 0, 0, 0, -0.8, 0.8, -0.8);
     movementVector6D["oneDirectionRotateZ"]  = (Mat_<double>(6,1) << 0, 0, CV_PI/56, 0.0, 0.0, 0.0);
+        // SolvePnp and RansacSolvePnp don't cope with the oneDirectionRotateY and oneDirectionRotateX
+        // bad for both tVec: north_east and default
     movementVector6D["oneDirectionRotateY"]  = (Mat_<double>(6,1) << 0, CV_PI/56, 0, 0.0, 0.0, 0.0);
     movementVector6D["oneDirectionRotateX"]  = (Mat_<double>(6,1) << CV_PI/56, 0, 0, 0.0, 0.0, 0.0);
     movementVector6D["oneDirectionRotateZs"] = (Mat_<double>(6,1) << 0, 0, CV_PI/120, 0.0, 0.0, 0.0);
@@ -241,7 +243,13 @@ int main(int argn, char* argv[])
 	std::list<Mat> fakeMovieScenario;
 
     for(int i=0;i<1000;i++)
-		fakeMovieScenario.push_back(movementVector6D["bigTranslate"]);
+    {
+		//fakeMovieScenario.push_back(movementVector6D["oneDirectionRotateZs"]);
+            // interesting to see, robustness! some control points are shown, then are disappeared, then are shown and are disappeared again.
+            // but works good with SolvePnP and RansacSolvePnP
+            // with tVec["default"];
+        fakeMovieScenario.push_back(movementVector6D["bigTranslate"]);
+    }
 
 	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(isLogsEnabled), VideoHeight, VideoWidth);
 	//movie.Play();
