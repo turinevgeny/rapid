@@ -5,5 +5,5 @@
 class RAPIDTracker : public Tracker
 {
 public:
-	RAPIDTracker(Model& model);
+	RAPIDTracker(Model& model, bool isLogsEnabled);
 };

@@ -18,8 +18,10 @@ enum Direction {HORIZONTAL, VERTICAL, UPWARD_DIAGONAL, DOWNWARD_DIAGONAL};
 class Tracker
 {
 public:
-    Tracker(Model _model) : model(_model)
-    { }
+    Tracker(Model _model, bool _isLogsEnabled) : model(_model)
+    {
+        isLogsEnabled = _isLogsEnabled;
+    }
     double GetConvergenceMeasure(const Model& model1, const Model& model2, int normType) const;
 	virtual cv::Mat	ExtractEdges(const cv::Mat& image) const;
     virtual void GetAndDrawCanny(cv::Mat& edges) const;
@@ -44,4 +46,5 @@ protected:
         cv::Point2d& foundPoint2);
 protected:
 	Model model;
+    bool isLogsEnabled;
 };

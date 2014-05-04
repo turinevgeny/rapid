@@ -13,13 +13,15 @@ public:
           const cv::Mat& cameraMatrix,
           const cv::Mat& distortionCoefficients,
           const cv::Mat& rotationVector,
-          const cv::Mat& translateVector);
+          const cv::Mat& translateVector,
+          const bool isLogsEnabled);
 	Model(const std::vector<cv::Mat> cornerPoints,
           const int      pointsPerEdge,
           const cv::Mat& cameraMatrix,
           const cv::Mat& distortionCoefficients,
           const cv::Mat& rotationVector,
-          const cv::Mat& translateVector);
+          const cv::Mat& translateVector,
+          const bool isLogsEnabled);
     Model(const Model& model);
     //Model& operator= (const Model& other);
 	~Model();
@@ -43,12 +45,13 @@ private:
 	int						pointsPerEdge;
 	cv::Mat					translateVector;	// is used for projection purposes
 	cv::Mat					rotationVector;		// is used for projection purposes
+    bool                    isLogsEnabled;
 protected:
 	cv::Point2d     Project(const cv::Mat& Point3d) const;
     cv::Point2d     ManualProject(const cv::Mat& Point3d) const;
 	virtual void	SetControlPoints();						// fills control points list with points evenly located on the edges
 	void            AddControlPointsFromTheEdge(int i, int j);
-
+    
 	friend class Tracker;
 	friend class RAPIDTracker;
 	friend class RAPIDTrackerExperiment;

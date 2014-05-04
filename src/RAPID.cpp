@@ -28,9 +28,10 @@ void help()
 A Video Rate Object Tracker\n\
 Attitude and position determination of a known 3D object\n\
 Usage:\n\
-./RAPID VideoInfoXmlFile numberOfFirstFrame\n\
+./RAPID VideoInfoXmlFile numberOfFirstFrame [-o]\n\
 \tVideoInfoXmlFile - XML or YAML file containing video and model information;\n\
 \tnumberOfFirstFrame - Tracking algorithm starts with a given frame in the video.\n\
+\t[-o] - (optional) if specified, logs will be enabled. \n\
 --------------------------------------------------------------------------\n\
 	" << endl;
 }
@@ -39,6 +40,7 @@ Usage:\n\
 bool ValidateAndInterpretePrameters(const int argn,
                                     const char* argv[],
                                     int& firstFrame,
+                                    bool& isLogsEnabled,
                                     VideoInfo& videoInfo,
                                     VideoCapture& cap,
                                     Mat& cameraMatrix,
@@ -54,6 +56,7 @@ bool EstimateInititalPose(const Mat& view,
 
 int main(int argn, char* argv[])
 {
+    bool isLogsEnabled = false;
     int firstFrame;
     VideoInfo videoInfo;
     VideoCapture cap;
@@ -64,6 +67,7 @@ int main(int argn, char* argv[])
         argn,
         (const char**)argv,
         firstFrame,
+        isLogsEnabled,
         videoInfo,
         cap,
         Camera_Matrix,
@@ -86,11 +90,11 @@ int main(int argn, char* argv[])
     }
 
 	const int PointsPerEdge = 5;
-    Model model(videoInfo.GetCornerPoints(), PointsPerEdge, Camera_Matrix, Distortion_Coefficients, rVec, tVec);
+    Model model(videoInfo.GetCornerPoints(), PointsPerEdge, Camera_Matrix, Distortion_Coefficients, rVec, tVec, isLogsEnabled);
 
-    //RAPIDTracker tracker(model);
-	//RAPIDTrackerExperiment tracker(model);
-    RansacTracker tracker(model, 10, 0.5, 1);
+    //RAPIDTracker tracker(model, isLogsEnabled);
+	//RAPIDTrackerExperiment tracker(model, isLogsEnabled);
+    RansacTracker tracker(model, isLogsEnabled, 10, 0.5, 1);
 
     const std::string nextWindowName = "Next";
     const std::string currentWindowName = "Current";
@@ -178,19 +182,35 @@ bool EstimateInititalPose(const Mat& circlesImage,
 bool ValidateAndInterpretePrameters(const int argn,
                                     const char* argv[],
                                     int& firstFrame,
+                                    bool& isLogsEnabled,
                                     VideoInfo& videoInfo,
                                     VideoCapture& cap,
                                     Mat& cameraMatrix,
                                     Mat& distortionCoefficients)
 {
     // checking number of the command line arguments
-    if (argn < 3)
+    if ((argn != 3) && (argn != 4))
     {
         help();
         cerr << "Not enough parameters" << endl;
         return false;
     }
 
+    if (argn == 4)
+    {
+        if (strcmp(argv[3], "-o"))
+        {
+           help();
+           cerr << "Unknown option: " << argv[3] <<endl;
+           return false;
+        }
+        else
+        {
+            isLogsEnabled = true;
+        }
+    }
+
+        
     firstFrame = atoi(argv[2]);
     std::string videoInfoXmlPath = argv[1];
 

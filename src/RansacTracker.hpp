@@ -6,7 +6,8 @@ class RansacTracker : public Tracker
 {
 public:
     RansacTracker(
-        Model,
+        Model model,
+        bool isLogsEnabled,
         int iterationsCount = 100,
         float reprojectionError = 8.0,
         int minInliersCount = 100);

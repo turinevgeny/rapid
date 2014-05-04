@@ -16,7 +16,8 @@ Model::Model(const Mat* _cornerPoints,
              const Mat& _cameraMatrix,
              const Mat& _distortionCoefficients,
              const Mat& _rotationVector,
-             const Mat& _translateVector)
+             const Mat& _translateVector,
+             const bool _isLogsEnabled)
 {
 	for(int i = 0; i < 8; i++)
 		cornerPoints.push_back(_cornerPoints[i].clone());
@@ -29,6 +30,7 @@ Model::Model(const Mat* _cornerPoints,
     translateVector = _translateVector;
 
 	SetControlPoints();
+    isLogsEnabled = _isLogsEnabled;
 }
 
 Model::Model(const std::vector<Mat> _cornerPoints,
@@ -36,7 +38,8 @@ Model::Model(const std::vector<Mat> _cornerPoints,
              const Mat& _cameraMatrix,
              const Mat& _distortionCoefficients,
              const Mat& _rotationVector,
-             const Mat& _translateVector)
+             const Mat& _translateVector,
+             const bool _isLogsEnabled)
 {
 	for(unsigned int i = 0; i < _cornerPoints.size(); i++)
 		cornerPoints.push_back(_cornerPoints[i].clone());
@@ -49,6 +52,8 @@ Model::Model(const std::vector<Mat> _cornerPoints,
     translateVector = _translateVector;
 
 	SetControlPoints();
+
+    isLogsEnabled = _isLogsEnabled;
 }
 
 Model::Model(const Model& model)
@@ -85,6 +90,7 @@ Model::Model(const Model& model)
     this->cameraMatrix = model.cameraMatrix.clone();
     this->distortionCoefficients = model.distortionCoefficients.clone();
     this->pointsPerEdge = model.pointsPerEdge;
+    this->isLogsEnabled = model.isLogsEnabled;
 }
 
 Model::~Model()
@@ -171,7 +177,10 @@ void Model::DrawReferencePoints(const Mat& source, Mat& patternOrigin3D, int num
     namedWindow("DrawReferencePoints", CV_WINDOW_AUTOSIZE);
     imshow("DrawReferencePoints", view);
 
-    cout << "Coordinates of box's reference point in camera coordinates" << endl << translateVector << endl;
+    if (isLogsEnabled) 
+    {
+        cout << "Coordinates of box's reference point in camera coordinates" << endl << translateVector << endl;
+    }
 }
 
 Mat Model::Outline(const Mat&   source,

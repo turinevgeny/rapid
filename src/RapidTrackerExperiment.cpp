@@ -11,8 +11,8 @@ using std::cout;
 using std::endl;
 using namespace cv;
 
-RAPIDTrackerExperiment::RAPIDTrackerExperiment(Model& _model)
-	:RAPIDTracker(_model)
+RAPIDTrackerExperiment::RAPIDTrackerExperiment(Model& _model, bool _isLogsEnabled)
+	:RAPIDTracker(_model, _isLogsEnabled)
 {}
 
 RAPIDTrackerExperiment::~RAPIDTrackerExperiment()
@@ -60,8 +60,11 @@ void RAPIDTrackerExperiment::RunSolvePnP(
 		//cout << "---(SolvePnP) rotate vector" << endl << rvec << endl << "---(SolvePnP) translate vector=" << endl << tvec << endl;
 		Mat delta_rvec = abs(out_rvec - model.rotationVector);
 		Mat delta_tvec = abs(out_tvec - model.translateVector);
-		cout << "---(SolvePnP) delta rotate vector" << endl << delta_rvec<< endl;
-		cout << "---(SolvePnP) delta translate vector=" << endl << delta_tvec << endl << endl;
+        if (isLogsEnabled)
+        {
+		    cout << "---(SolvePnP) delta rotate vector" << endl << delta_rvec<< endl;
+		    cout << "---(SolvePnP) delta translate vector=" << endl << delta_tvec << endl << endl;
+        }
 
         for(int i=0; i<3; i++)
 	        file << delta_rvec.at<double>(i, 0) << ", ";

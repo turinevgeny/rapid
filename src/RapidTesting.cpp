@@ -22,10 +22,24 @@ using std::endl;
 
 using namespace cv;
 
+void help()
+{
+	cout << endl <<
+	"\
+--------------------------------------------------------------------------\n\
+A Fake Movie Object Tracker\n\
+Attitude and position determination of a known 3D object\n\
+Usage:\n\
+./RAPIDTesting [-o]\n\
+\t[-o] - (optional) if specified, logs will be enabled. \n\
+--------------------------------------------------------------------------\n\
+	" << endl;
+}
+
 class RAPIDTestingTracker : public RAPIDTracker
 {
 public:
-	RAPIDTestingTracker(Model& model) : RAPIDTracker(model) { }
+	RAPIDTestingTracker(Model& _model, bool _isLogsEnabled) : RAPIDTracker(_model, _isLogsEnabled) { }
 
     virtual void GetAndDrawCanny(cv::Mat& edges) const {}
 };
@@ -33,7 +47,7 @@ public:
 class RAPIDTestingTrackerExperiment : public RAPIDTrackerExperiment
 {
 public:
-	RAPIDTestingTrackerExperiment(Model& model) : RAPIDTrackerExperiment(model) { }
+	RAPIDTestingTrackerExperiment(Model& _model, bool _isLogsEnabled) : RAPIDTrackerExperiment(_model, _isLogsEnabled) { }
 
     virtual void GetAndDrawCanny(cv::Mat& edges) const {}
 };
@@ -47,8 +61,9 @@ public:
 		const cv::Mat& cameraMatrix,
 		const cv::Mat& distortionCoefficients,
 		const cv::Mat& rotationVector,
-		const cv::Mat& translateVector)
-		: Model(cornerPoints, pointsPerEdge, cameraMatrix, distortionCoefficients, rotationVector, translateVector)
+		const cv::Mat& translateVector,
+        const bool isLogsEnabled)
+		: Model(cornerPoints, pointsPerEdge, cameraMatrix, distortionCoefficients, rotationVector, translateVector, isLogsEnabled)
 	{ }
 	RapidTestingModel(const RapidTestingModel& model) : Model(model) { }
 	RapidTestingModel(const Model& model) : Model(model) { }
@@ -73,7 +88,7 @@ public:
 	}
 };
 
-Model GetHardcodedModel()
+Model GetHardcodedModel(bool isLogsEnabled)
 {
 	const double a = 145.0;
 	const double b = 45.0;
@@ -115,7 +130,7 @@ Model GetHardcodedModel()
 
 	const Mat translateVector = tVec["default"];
 
-	Model model(cornerPoints, pointsPerEdge, cameraMatrix, distortionCoefficients, rotationVector, translateVector);
+	Model model(cornerPoints, pointsPerEdge, cameraMatrix, distortionCoefficients, rotationVector, translateVector, isLogsEnabled);
 
 	return model;
 }
@@ -180,6 +195,21 @@ private:
 
 int main(int argn, char* argv[])
 {
+    bool isLogsEnabled = false;
+
+    if (argn == 2)
+    {
+        if (strcmp(argv[1], "-o"))
+        {
+           help();
+           cerr << "Unknown option: " << argv[1] <<endl;
+        }
+        else
+        {
+            isLogsEnabled = true;
+        }
+    }
+
 	/// Windows names
 	const std::string currentWindowName = "Current";
 	const std::string nextWindowName = "Next";
@@ -197,26 +227,26 @@ int main(int argn, char* argv[])
     movementVector6D["oneDirectionRotateX"]  = (Mat_<double>(6,1) << CV_PI/56, 0, 0, 0.0, 0.0, 0.0);
     movementVector6D["oneDirectionRotateZs"] = (Mat_<double>(6,1) << 0, 0, CV_PI/120, 0.0, 0.0, 0.0);
 
-	Model model = (RapidTestingModel) GetHardcodedModel();
+	Model model = (RapidTestingModel) GetHardcodedModel(isLogsEnabled);
 
 	std::list<Mat> fakeMovieScenario;
 
     for(int i=0;i<1000;i++)
 		fakeMovieScenario.push_back(movementVector6D["bigTranslate"]);
 
-	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(), VideoHeight, VideoWidth);
+	FakeMovie movie(fakeMovieScenario, GetHardcodedModel(isLogsEnabled), VideoHeight, VideoWidth);
 	//movie.Play();
 
-    //RAPIDTestingTracker tracker(model);
-    //RAPIDTestingTrackerExperiment tracker(model);
+    //RAPIDTestingTracker tracker(model, isLogsEnabled);
+    //RAPIDTestingTrackerExperiment tracker(model, isLogsEnabled);
 
-    //RansacTracker tracker(model, 10, 0.5, 1); // crash occurs on 2 frame
-    //RansacTracker tracker(model, 10, 8, 10); // crash occurs on 6 frame
-    //RansacTracker tracker(model, 10, 8, 20); // crash occurs on 47 frame
-    RansacTracker tracker(model, 100, 8, 20); // works without crashes as long as there will be no points (119 frame)
-    //RansacTracker tracker(model, 100, 8, 5); // incorrect defenition of pose since 32 frame, but interesting to see
-    //RansacTracker tracker(model, 100, 0.5, 20); // incorrect defenition of pose since 15 frame (crash on 22), but interesting to see
-    //RansacTracker tracker(model, 1000, 0.5, 20); // incorrect defenition of pose since 15 frame. Lasts much longer
+    //RansacTracker tracker(model, isLogsEnabled, 10, 0.5, 1); // crash occurs on 2 frame
+    //RansacTracker tracker(model, isLogsEnabled, 10, 8, 10); // crash occurs on 6 frame
+    //RansacTracker tracker(model, isLogsEnabled, 10, 8, 20); // crash occurs on 47 frame
+    RansacTracker tracker(model, isLogsEnabled, 100, 8, 20); // works without crashes as long as there will be no points (119 frame)
+    //RansacTracker tracker(model, isLogsEnabled, 100, 8, 5); // incorrect defenition of pose since 32 frame, but interesting to see
+    //RansacTracker tracker(model, isLogsEnabled, 100, 0.5, 20); // incorrect defenition of pose since 15 frame (crash on 22), but interesting to see
+    //RansacTracker tracker(model, isLogsEnabled, 1000, 0.5, 20); // incorrect defenition of pose since 15 frame. Lasts much longer
 
     Mat movieFrame;
     int frameNumber = 0;

@@ -126,7 +126,10 @@ bool Tracker::FindPoints(Point2d controlPoint,
     {
         foundPoint = Point2d(currX1, currY1);
         foundPoint2 = Point2d(currX2, currY2);
-        std::cout<<"Warning: The control point doesn't exist to image! Coordinates: ( "<<currX1<<" : "<<currY1<<" )"<<std::endl;
+        if (isLogsEnabled)
+        {
+            std::cout<<"Warning: The control point doesn't exist to image! Coordinates: ( "<<currX1<<" : "<<currY1<<" )"<<std::endl;
+        }
         return false; // The point won't be taken into account
     }
 
@@ -160,14 +163,20 @@ bool Tracker::FindPoints(Point2d controlPoint,
         //foundPoint2 = Point2d(currX2, currY2); //to draw purple point at which the search stopped
         if ((diff2==255) && (num == 0))
         {
-            cout<<"Warning: The found point and the control point are the same! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
+            if (isLogsEnabled)
+            {
+                cout<<"Warning: The found point and the control point are the same! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
+            }
         }
         if ((diff2==255) && (num > 0))
         {
             foundPoint2 = Point2d(currX2, currY2);
-            cout<<"Warning: Found two points! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
-            cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<endl;
-            cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<endl;
+            if (isLogsEnabled)
+            {
+                cout<<"Warning: Found two points! Control point: ( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
+                cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<endl;
+                cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<endl;
+            }
         }
     }
     else
@@ -193,9 +202,12 @@ bool Tracker::FindPoints(Point2d controlPoint,
         {
             foundPoint = Point2d(currX1, currY1);
             foundPoint2 = Point2d(currX2, currY2);
-            cout<<"Warning: Point isn't found for control point( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
-            cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<endl;
-            cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<endl;
+            if (isLogsEnabled)
+            {
+                cout<<"Warning: Point isn't found for control point( "<<controlPoint.x<<" : "<<controlPoint.y<<" )"<<endl;
+                cout<<"Warning: First 2D point:  ( "<<foundPoint.x<<" : "<<foundPoint.y<<" )"<<endl;
+                cout<<"Warning: Second 2D point:  ( "<<foundPoint2.x<<" : "<<foundPoint2.y<<" )"<<endl;
+            }
             return false; // The point won't be taken into account
         }
     }
@@ -257,9 +269,12 @@ void Tracker::RunSolvePnP(
     Mat& out_tvec) const
 {
     solvePnP(Mat(modelPoints3D), Mat(foundBoxPoints2D), model.cameraMatrix,model.distortionCoefficients, out_rvec, out_tvec, false);
-    //cout << "---(SolvePnP) rotate vector" << endl << rvec << endl << "---(SolvePnP) translate vector=" << endl << tvec << endl;
-    cout << "---(SolvePnP) delta rotate vector" << endl << out_rvec - model.rotationVector<< endl;
-    cout << "---(SolvePnP) delta translate vector=" << endl << out_tvec - model.translateVector << endl << endl;
+    if (isLogsEnabled)
+    {
+        //cout << "---(SolvePnP) rotate vector" << endl << rvec << endl << "---(SolvePnP) translate vector=" << endl << tvec << endl;
+        cout << "---(SolvePnP) delta rotate vector" << endl << out_rvec - model.rotationVector<< endl;
+        cout << "---(SolvePnP) delta translate vector=" << endl << out_tvec - model.translateVector << endl << endl;
+    }
 }
 
 Model Tracker::ProcessFrame(const Mat& frame)

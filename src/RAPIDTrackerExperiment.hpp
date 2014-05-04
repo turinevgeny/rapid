@@ -11,7 +11,7 @@
 class RAPIDTrackerExperiment : public RAPIDTracker
 {
 public:
-	RAPIDTrackerExperiment::RAPIDTrackerExperiment(Model& _model);
+	RAPIDTrackerExperiment::RAPIDTrackerExperiment(Model& _model, bool _isLogsEnabled);
 	virtual void RunSolvePnP(
 		const std::vector<cv::Point2f> foundBoxPoints2D,
 		const std::vector<cv::Point3f> modelPoints3D,
