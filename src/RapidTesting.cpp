@@ -41,9 +41,7 @@ class EdgeExtractorStub : virtual public EdgeExtractor
 {
 public:
     virtual void GetAndDrawCanny(cv::Mat& edges) const
-    {
-        std::cerr << "EdgeExtractorStub" << std::endl;
-    }
+    { }
 };
 
 class RAPIDTestingTracker : public RAPIDTracker, protected EdgeExtractorStub
