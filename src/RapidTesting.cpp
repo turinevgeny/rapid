@@ -9,6 +9,7 @@
 #include <opencv2/imgproc/imgproc_c.h>
 #include <opencv2/highgui/highgui_c.h>
 
+#include "EdgeExtractor.hpp"
 // Model traits and its handling methods
 #include "Model.hpp"
 // Algorithm wrapper
@@ -36,29 +37,32 @@ Usage:\n\
 	" << endl;
 }
 
-class RAPIDTestingTracker : public RAPIDTracker
+class EdgeExtractorStub : virtual public EdgeExtractor
+{
+public:
+    virtual void GetAndDrawCanny(cv::Mat& edges) const
+    {
+        std::cerr << "EdgeExtractorStub" << std::endl;
+    }
+};
+
+class RAPIDTestingTracker : public RAPIDTracker, protected EdgeExtractorStub
 {
 public:
 	RAPIDTestingTracker(Model& _model, bool _isLogsEnabled) : RAPIDTracker(_model, _isLogsEnabled) { }
-
-    virtual void GetAndDrawCanny(cv::Mat& edges) const {}
 };
 
-class RAPIDTestingTrackerExperiment : public RAPIDTrackerExperiment
+class RAPIDTestingTrackerExperiment : public RAPIDTrackerExperiment, protected EdgeExtractorStub
 {
 public:
 	RAPIDTestingTrackerExperiment(Model& _model, bool _isLogsEnabled) : RAPIDTrackerExperiment(_model, _isLogsEnabled) { }
-
-    virtual void GetAndDrawCanny(cv::Mat& edges) const {}
 };
 
-class RansacTestingTracker: public RansacTracker
+class RansacTestingTracker: public RansacTracker, protected EdgeExtractorStub
 {
 public:
 	RansacTestingTracker(Model model, bool _isLogsEnabled, int iterationsCount, float reprojectionError, int minInliersCount) :
         RansacTracker( model, _isLogsEnabled, iterationsCount, reprojectionError, minInliersCount) { }
-
-    virtual void GetAndDrawCanny(cv::Mat& edges) const {}
 };
 
 class RapidTestingModel : public Model

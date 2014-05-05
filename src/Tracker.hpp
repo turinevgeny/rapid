@@ -11,11 +11,12 @@
 #include <opencv2/highgui/highgui_c.h>
 
 #include "Model.hpp"
+#include "EdgeExtractor.hpp"
 
 // Describes possible search directions among a row of pixels
 enum Direction {HORIZONTAL, VERTICAL, UPWARD_DIAGONAL, DOWNWARD_DIAGONAL};
 
-class Tracker
+class Tracker : virtual protected EdgeExtractor
 {
 public:
     Tracker(Model _model, bool _isLogsEnabled) : model(_model)
@@ -24,7 +25,6 @@ public:
     }
     double GetConvergenceMeasure(const Model& model1, const Model& model2, int normType) const;
 	virtual cv::Mat	ExtractEdges(const cv::Mat& image) const;
-    virtual void GetAndDrawCanny(cv::Mat& edges) const;
 
     virtual void GetAndDrawPointsForSolvePnP(
         const cv::Mat& frame,
