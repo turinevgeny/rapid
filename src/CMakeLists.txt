@@ -16,7 +16,8 @@ set( CORE_HEADERS_LIB
 	VideoInfoBase.hpp
 	Util.hpp
 	Tracker.hpp
-	RansacTracker.hpp )
+	RansacTracker.hpp
+	EdgeExtractor.hpp )
 add_library( CORE_LIB
 	${CORE_HEADERS_LIB}
 	Model.cpp
