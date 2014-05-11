@@ -35,6 +35,7 @@ public:
                             const bool       isDrawCompanionPoints = false);	      // projects the model onto the image
 	void			updatePose(const cv::Mat& rotVector, const cv::Mat& transVector); // 3d vectors
 	void			updatePose(const cv::Mat& solution);	// solution = rotation angles concatenated with translation distances
+	int				GetNumberControlPoints() const { return controlPoints.size(); };
 
 	std::list<cv::Point2d> GetProjectedControlPoints() const;
 private:

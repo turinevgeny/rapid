@@ -11,8 +11,11 @@ using std::cout;
 using std::endl;
 using namespace cv;
 
-RAPIDTrackerExperiment::RAPIDTrackerExperiment(Model& _model, bool _isLogsEnabled)
-	:RAPIDTracker(_model, _isLogsEnabled)
+RAPIDTrackerExperiment::RAPIDTrackerExperiment(
+	Model& _model, 
+	bool _isLogsEnabled,
+	unsigned int _k)
+	:	RAPIDTracker(_model, _isLogsEnabled), k(_k)
 {}
 
 RAPIDTrackerExperiment::~RAPIDTrackerExperiment()
@@ -32,24 +35,49 @@ void RAPIDTrackerExperiment::getSubVectors(
 	}
 }
 
+void RAPIDTrackerExperiment::OutputRvecAndTvec(const Mat rvec, const Mat tvec, std::ofstream& file) const
+{
+	Mat delta_rvec = abs(rvec - model.rotationVector);
+	Mat delta_tvec = abs(tvec - model.translateVector);
+	if (isLogsEnabled)
+	{
+		//cout << "---(SolvePnP) rotate vector" << endl << rvec << endl << "---(SolvePnP) translate vector=" << endl << tvec << endl;
+		cout << "---(SolvePnP) delta rotate vector" << endl << delta_rvec<< endl;
+		cout << "---(SolvePnP) delta translate vector=" << endl << delta_tvec << endl << endl;
+	}
+
+	for(int i=0; i<3; i++)
+		file << delta_rvec.at<double>(i, 0) << ", ";
+	for(int i=0; i<2; i++)
+		file << delta_tvec.at<double>(i, 0) << ", ";
+	file << delta_tvec.at<double>(2, 0) << endl;
+}
+
 void RAPIDTrackerExperiment::RunSolvePnP(
 	const std::vector<Point2f> foundBoxPoints2D,
     const std::vector<Point3f> modelPoints3D,
 	Mat& out_rvec,
 	Mat& out_tvec) const
 {
-	int n = model.controlPoints.size();
-	int k = n / 2;
-	util::RandomGenerator rng;
+	std::ofstream file;
+	file.open ("../others/matlab_workspace/rvec_and_tvec.txt");
+	//file.open ("../others/matlab_workspace/rvec_and_tvec.txt", std::ios::app);
 
-    std::ofstream file;
-    file.open ("../others/matlab_workspace/rvec_and_tvec.txt");
+	std::vector<unsigned> subset(k);
 
-	for (int i = 0; i < n; i++)
+	// Initialization of the first subset
+	for (int i = 0; i != k; i++)
+		subset[i] = i;
+
+	const unsigned int n = model.controlPoints.size();
+
+	int idx = 0;
+
+	while(GenerateNextSubset(subset, n))
 	{
-		std::vector<unsigned> subset;
-		rng.drawUniformSubset(n, k, subset);
-
+		cout << idx++ << endl;
+		//if (idx == 1000)
+			//break;
 		std::vector<Point3f> subModelPoints3D;
 		std::vector<Point2f> subFoundBoxPoints2D;
 
@@ -57,22 +85,12 @@ void RAPIDTrackerExperiment::RunSolvePnP(
 
 		solvePnP(Mat(subModelPoints3D), Mat(subFoundBoxPoints2D), model.cameraMatrix,
 			model.distortionCoefficients, out_rvec, out_tvec, false);
-		//cout << "---(SolvePnP) rotate vector" << endl << rvec << endl << "---(SolvePnP) translate vector=" << endl << tvec << endl;
-		Mat delta_rvec = abs(out_rvec - model.rotationVector);
-		Mat delta_tvec = abs(out_tvec - model.translateVector);
-        if (isLogsEnabled)
-        {
-		    cout << "---(SolvePnP) delta rotate vector" << endl << delta_rvec<< endl;
-		    cout << "---(SolvePnP) delta translate vector=" << endl << delta_tvec << endl << endl;
-        }
 
-        for(int i=0; i<3; i++)
-	        file << delta_rvec.at<double>(i, 0) << ", ";
-        for(int i=0; i<2; i++)
-    	    file << delta_tvec.at<double>(i, 0) << ", ";
-    	file << delta_tvec.at<double>(2, 0) << endl;
-		
+		OutputRvecAndTvec(out_rvec, out_tvec, file);
 	}
 
-    file.close();
+	solvePnP(Mat(modelPoints3D), Mat(foundBoxPoints2D), model.cameraMatrix,
+		model.distortionCoefficients, out_rvec, out_tvec, false);
+
+	file.close();
 }
